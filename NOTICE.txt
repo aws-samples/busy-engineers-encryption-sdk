@@ -1,3 +1,12 @@
+reinvent-sid345-workshop-sample
+Copyright 2017 Amazon.com, Inc. or its affiliates. All rights reserved.
+
+**********************
+THIRD PARTY COMPONENTS
+**********************
+This software includes third party software subject to the following copyrights:
+
+
 ** bootstrap ; version v4.0.0 -- https://github.com/twbs/bootstrap
 Copyright (c) 2011-2016 Twitter, Inc.
 
