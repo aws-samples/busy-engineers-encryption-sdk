@@ -1,0 +1,10 @@
+version: 0.2
+phases:
+    build:
+       commands:
+         - pip install mkdocs
+         - pip install mkdocs-material
+         - mkdocs build --clean
+    post_build:
+      commands:
+        aws s3 sync --acl public-read site s3://sid345.reinvent-workshop.com

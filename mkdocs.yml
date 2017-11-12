@@ -1,0 +1,12 @@
+site_name: "re:Invent SID345 Workshop"
+repo_url: https://github.com/aws-samples/reinvent-sid345-workshop-sample
+docs_dir: docs
+pages:
+    - "Welcome": 'index.md'
+    - "Exercise 0": '0-explore.md'
+    - "Exercise 1": '1-kms_encryption.md'
+    - "Exercise 2": '2-encryption-sdk.md'
+    - "Exercise 3": '3-caching.md'
+theme: mkdocs
+use_directory_urls: false
+strict: true
