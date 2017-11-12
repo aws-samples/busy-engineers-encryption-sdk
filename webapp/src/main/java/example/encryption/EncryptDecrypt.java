@@ -44,6 +44,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Singleton
 public class EncryptDecrypt {
     private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
+    private final AWSKMS kms;
+    private final String keyId;
 
     @SuppressWarnings("unused") // all fields are used via JSON deserialization
     private static class FormData {
@@ -55,7 +57,8 @@ public class EncryptDecrypt {
 
     @Inject
     public EncryptDecrypt(@Named("keyId") final String keyId) {
-        // TODO - do something with keyId?
+        kms = AWSKMSClient.builder().build();
+        this.keyId = keyId;
     }
 
     public String encrypt(JsonNode data) throws IOException {
@@ -64,16 +67,33 @@ public class EncryptDecrypt {
         // We can access specific form fields using values in the parsed FormData object.
         LOGGER.info("Got form submission for order " + formValues.orderid);
 
-        // TODO: Encryption goes here
-
         byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
 
-        return Base64.getEncoder().encodeToString(plaintext);
+        EncryptRequest request = new EncryptRequest();
+        request.setKeyId(keyId);
+        request.setPlaintext(ByteBuffer.wrap(plaintext));
+
+        EncryptResult result = kms.encrypt(request);
+
+        // Convert to byte array
+        byte[] ciphertext = new byte[result.getCiphertextBlob().remaining()];
+        result.getCiphertextBlob().get(ciphertext);
+
+        return Base64.getEncoder().encodeToString(ciphertext);
     }
 
     public JsonNode decrypt(String ciphertext) throws IOException {
         byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
-        return MAPPER.readTree(ciphertextBytes);
+        DecryptRequest request = new DecryptRequest();
+        request.setCiphertextBlob(ByteBuffer.wrap(ciphertextBytes));
+
+        DecryptResult result = kms.decrypt(request);
+
+        // Convert to byte array
+        byte[] plaintext = new byte[result.getPlaintext().remaining()];
+        result.getPlaintext().get(plaintext);
+
+        return MAPPER.readTree(plaintext);
     }
 }
