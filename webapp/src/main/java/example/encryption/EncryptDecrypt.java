@@ -66,10 +66,14 @@ public class EncryptDecrypt {
 
         // TODO: Encryption goes here
 
-        return MAPPER.writeValueAsString(formValues);
+        byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
+
+        return Base64.getEncoder().encodeToString(plaintext);
     }
 
     public JsonNode decrypt(String ciphertext) throws IOException {
-        return MAPPER.readTree(ciphertext);
+        byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+
+        return MAPPER.readTree(ciphertextBytes);
     }
 }
