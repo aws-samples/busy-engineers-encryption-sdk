@@ -44,6 +44,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Singleton
 public class EncryptDecrypt {
     private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
+    private static final String K_MESSAGE_TYPE = "message type";
+    private static final String TYPE_ORDER_INQUIRY = "order inquiry";
+
     private final AWSKMS kms;
     private final String keyId;
 
@@ -73,6 +76,10 @@ public class EncryptDecrypt {
         request.setKeyId(keyId);
         request.setPlaintext(ByteBuffer.wrap(plaintext));
 
+        HashMap<String, String> context = new HashMap<>();
+        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+        request.setEncryptionContext(context);
+
         EncryptResult result = kms.encrypt(request);
 
         // Convert to byte array
@@ -87,6 +94,10 @@ public class EncryptDecrypt {
 
         DecryptRequest request = new DecryptRequest();
         request.setCiphertextBlob(ByteBuffer.wrap(ciphertextBytes));
+
+        HashMap<String, String> context = new HashMap<>();
+        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+        request.setEncryptionContext(context);
 
         DecryptResult result = kms.decrypt(request);
 
