@@ -19,7 +19,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Objects;
@@ -28,15 +27,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.CryptoResult;
+import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.DecryptRequest;
-import com.amazonaws.services.kms.model.DecryptResult;
-import com.amazonaws.services.kms.model.EncryptRequest;
-import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -50,10 +48,10 @@ public class EncryptDecrypt {
     private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
     private static final String K_MESSAGE_TYPE = "message type";
     private static final String TYPE_ORDER_INQUIRY = "order inquiry";
-    private static final String K_ORDER_ID = "order ID";
+    private static final String K_TIMESTAMP = "rough timestamp";
 
     private final AWSKMS kms;
-    private final KmsMasterKey masterKey;
+    private final CryptoMaterialsManager materialsManager;
 
     @SuppressWarnings("unused") // all fields are used via JSON deserialization
     private static class FormData {
@@ -66,8 +64,16 @@ public class EncryptDecrypt {
     @Inject
     public EncryptDecrypt(@Named("keyId") final String keyId) {
         kms = AWSKMSClient.builder().build();
-        this.masterKey = new KmsMasterKeyProvider(keyId)
+        KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
             .getMasterKey(keyId);
+
+        LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
+        materialsManager = CachingCryptoMaterialsManager.newBuilder()
+            .withMaxAge(5, TimeUnit.MINUTES)
+            .withMasterKeyProvider(masterKey)
+            .withMessageUseLimit(10)
+            .withCache(cache)
+            .build();
     }
 
     public String encrypt(JsonNode data) throws IOException {
@@ -80,11 +86,10 @@ public class EncryptDecrypt {
 
         HashMap<String, String> context = new HashMap<>();
         context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
-        if (formValues.orderid != null && formValues.orderid.length() > 0) {
-            context.put(K_ORDER_ID, formValues.orderid);
-        }
+        // Round down to an hour
+        context.put(K_TIMESTAMP, "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
 
-        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+        byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
 
         return Base64.getEncoder().encodeToString(ciphertext);
     }
@@ -92,7 +97,7 @@ public class EncryptDecrypt {
     public JsonNode decrypt(String ciphertext) throws IOException {
         byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
-        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(materialsManager, ciphertextBytes);
 
         // Check that we have the correct type
         if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
