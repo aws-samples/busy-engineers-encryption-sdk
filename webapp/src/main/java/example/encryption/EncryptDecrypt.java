@@ -50,6 +50,7 @@ public class EncryptDecrypt {
     private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
     private static final String K_MESSAGE_TYPE = "message type";
     private static final String TYPE_ORDER_INQUIRY = "order inquiry";
+    private static final String K_ORDER_ID = "order ID";
 
     private final AWSKMS kms;
     private final KmsMasterKey masterKey;
@@ -79,6 +80,9 @@ public class EncryptDecrypt {
 
         HashMap<String, String> context = new HashMap<>();
         context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+        if (formValues.orderid != null && formValues.orderid.length() > 0) {
+            context.put(K_ORDER_ID, formValues.orderid);
+        }
 
         byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
 
