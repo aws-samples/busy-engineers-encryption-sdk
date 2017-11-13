@@ -27,6 +27,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.encryptionsdk.CryptoResult;
+import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.DecryptRequest;
@@ -48,7 +52,7 @@ public class EncryptDecrypt {
     private static final String TYPE_ORDER_INQUIRY = "order inquiry";
 
     private final AWSKMS kms;
-    private final String keyId;
+    private final KmsMasterKey masterKey;
 
     @SuppressWarnings("unused") // all fields are used via JSON deserialization
     private static class FormData {
@@ -61,7 +65,8 @@ public class EncryptDecrypt {
     @Inject
     public EncryptDecrypt(@Named("keyId") final String keyId) {
         kms = AWSKMSClient.builder().build();
-        this.keyId = keyId;
+        this.masterKey = new KmsMasterKeyProvider(keyId)
+            .getMasterKey(keyId);
     }
 
     public String encrypt(JsonNode data) throws IOException {
@@ -72,19 +77,10 @@ public class EncryptDecrypt {
 
         byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
 
-        EncryptRequest request = new EncryptRequest();
-        request.setKeyId(keyId);
-        request.setPlaintext(ByteBuffer.wrap(plaintext));
-
         HashMap<String, String> context = new HashMap<>();
         context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
-        request.setEncryptionContext(context);
 
-        EncryptResult result = kms.encrypt(request);
-
-        // Convert to byte array
-        byte[] ciphertext = new byte[result.getCiphertextBlob().remaining()];
-        result.getCiphertextBlob().get(ciphertext);
+        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
 
         return Base64.getEncoder().encodeToString(ciphertext);
     }
@@ -92,19 +88,13 @@ public class EncryptDecrypt {
     public JsonNode decrypt(String ciphertext) throws IOException {
         byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
-        DecryptRequest request = new DecryptRequest();
-        request.setCiphertextBlob(ByteBuffer.wrap(ciphertextBytes));
+        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
 
-        HashMap<String, String> context = new HashMap<>();
-        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
-        request.setEncryptionContext(context);
+        // Check that we have the correct type
+        if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
+            throw new IllegalArgumentException("Bad message type in decrypted message");
+        }
 
-        DecryptResult result = kms.decrypt(request);
-
-        // Convert to byte array
-        byte[] plaintext = new byte[result.getPlaintext().remaining()];
-        result.getPlaintext().get(plaintext);
-
-        return MAPPER.readTree(plaintext);
+        return MAPPER.readTree(result.getResult());
     }
 }
