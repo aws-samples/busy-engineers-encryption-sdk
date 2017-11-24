@@ -10,7 +10,6 @@ Install and set up the required components:
 * [JDK 1.8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
 * [Maven 3](https://maven.apache.org/)
 * [Git](https://git-scm.com/)
-* Optional but recommended: A Java IDE, such as [Eclipse](http://www.eclipse.org/).
 
 ## AWS credentials
 

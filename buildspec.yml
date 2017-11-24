@@ -7,4 +7,4 @@ phases:
          - mkdocs build --clean
     post_build:
       commands:
-        aws s3 sync --acl public-read site s3://sid345.reinvent-workshop.com
+        ./deploy.sh
