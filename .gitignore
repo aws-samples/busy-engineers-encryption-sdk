@@ -2,3 +2,8 @@ target
 *.iml
 .DS_Store
 .idea
+*.pyc
+*.pyo
+*.egg-info
+/build
+*/dist
