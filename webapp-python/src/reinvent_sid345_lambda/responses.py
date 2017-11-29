@@ -1,4 +1,5 @@
 """"""
+import base64
 import json
 
 
@@ -16,9 +17,7 @@ def json_response(status_code, data):
     """"""
     header = {'Content-Type': 'application/json'}
     try:
-        # We don't actually want to JSON-encode this here because Lambda takes care of
-        # that for us, but we want to make sure it's JSON-encodable.
-        json.dumps(data)
+        body = base64.b64encode(json.dumps(data).encode('utf-8')).decode('utf-8')
     except TypeError:
         body = 'Internal error'
         status_code = 500
@@ -26,7 +25,7 @@ def json_response(status_code, data):
         'isBase64Encoded': True,
         'statusCode': status_code,
         'headers': header,
-        'body': data
+        'body': body
     }
 
 

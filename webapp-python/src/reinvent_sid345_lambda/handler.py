@@ -95,13 +95,14 @@ def _parse_message(message):
     info = {
         'timestamp': _iso_format_datetime_from_sent_timestampt(message.attributes['SentTimestamp']),
         'messageID': message.message_id,
-        'ciphertext': _data_to_lines(message.body),
+        'ciphertext': '\n'.join(_data_to_lines(message.body)),
         'decryptInfo': ''
     }
     try:
-        info['plaintext'] = _encrypt_decrypt.decrypt(message.body)
+        info['plaintext'] = json.dumps(_encrypt_decrypt.decrypt(message.body), indent=4, sort_keys=True)
+        info['decryptInfo'] += 'KMS calls: {}'.format(0)
     except Exception as error:
-        info['decryptError'] = traceback.format_exc(error)
+        info['decryptError'] = traceback.format_exc()
     return info
 
 
@@ -113,13 +114,13 @@ def _iso_format_datetime_from_sent_timestampt(sent_timestamp):
 
 def _data_to_lines(data):
     """"""
-    return list(map(
+    return map(
         ''.join,
         zip_longest(
             *[iter(data)] * 80,
             fillvalue=''
         )
-    ))
+    )
 
 _ACTIONS = {
     'send': _send,
