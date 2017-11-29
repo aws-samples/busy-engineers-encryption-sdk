@@ -310,7 +310,7 @@ Resources:
       Code:
         S3Bucket: !Ref S3Bucket
         S3Key: reinvent_test.zip
-        S3ObjectVersion: 5f0t6JHgU1hmScadM2IGOYIrzbG3vOm6
+        S3ObjectVersion: 0UY1c7Uuw5mJQ6l.n3hb5K2TJ8kp5KiC
       Handler: reinvent_sid345_lambda.handler.sid345_handler
       ## We don't need this much memory, but setting a high memorysize means we get more CPU allocated, which reduces
       ## startup times.

@@ -1,5 +1,6 @@
 """"""
 import base64
+from datetime import datetime, timezone
 from itertools import zip_longest
 import json
 import logging
@@ -64,7 +65,7 @@ def _receive(request):
     raw_messages = []
     for _round  in range(MIN_ROUNDS):
         messages = _sqs_queue.receive_messages(
-            AttributeNames('SentTimestamp'),
+            AttributeNames=('SentTimestamp',),
             MaxNumberOfMessages=10,
             VisibilityTimeout=10
         )
@@ -87,8 +88,12 @@ def _receive(request):
 
 def _parse_message(message):
     """"""
+    _LOGGER.debug('MESSAGE:')
+    _LOGGER.debug(message)
+    _LOGGER.debug('MESSAGE ATTRIBUTES:')
+    _LOGGER.debug(message.attributes)
     info = {
-        'timestamp': FORMAT_TIMESTAMP(message.attributes['SentTimestamp']),
+        'timestamp': _iso_format_datetime_from_sent_timestampt(message.attributes['SentTimestamp']),
         'messageID': message.message_id,
         'ciphertext': _data_to_lines(message.body),
         'decryptInfo': ''
@@ -100,15 +105,21 @@ def _parse_message(message):
     return info
 
 
+def _iso_format_datetime_from_sent_timestampt(sent_timestamp):
+    """"""
+    epoch_seconds = int(sent_timestamp) / 1000.0
+    return datetime.utcfromtimestamp(epoch_seconds).astimezone(timezone.utc).isoformat()
+
+
 def _data_to_lines(data):
     """"""
-    return map(
+    return list(map(
         ''.join,
         zip_longest(
             *[iter(data)] * 80,
             fillvalue=''
         )
-    )
+    ))
 
 _ACTIONS = {
     'send': _send,
