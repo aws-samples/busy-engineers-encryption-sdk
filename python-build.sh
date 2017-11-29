@@ -10,14 +10,21 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""reinvent_sid345."""
-from setuptools import find_packages, setup
+#
+#This helper script builds the zip file for Lambda. See
+# python-build-remote.sh for more information.
 
-setup(
-    name='reinvent_sid345',
-    version='0.0.2',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
-    license='Apache License 2.0',
-    install_requires=['aws_encryption_sdk>=1.3.2']
-)
+BUCKET=${1?Bucket name must be provided}
+FILENAME='reinvent_sid345_python.zip'
+
+rm -rf py36test dep_dir
+virtualenv py36test -p python3.6
+source py36test/bin/activate
+mkdir dep_dir
+pip install reinvent_sid345-*.tar.gz -t dep_dir
+deactivate
+cd dep_dir
+zip -r ../${FILENAME} .
+cd ..
+aws s3 cp ${FILENAME} s3://${BUCKET}/
+aws s3api list-object-versions --bucket $BUCKET --prefix ${FILENAME} --max-items 1

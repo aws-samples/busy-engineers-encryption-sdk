@@ -61,6 +61,8 @@ Resources:
     Type: 'AWS::ApiGateway::Account'
     Properties:
       CloudWatchRoleArn: !GetAtt ApiCloudwatchRole.Arn
+    DependsOn:
+      - RestAPI
   RestAPIRootGET:
   # Handle a GET on the root by proxying through to our index.html static asset
     Type: 'AWS::ApiGateway::Method'
@@ -309,9 +311,9 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: reinvent_test.zip
-        S3ObjectVersion: Yzby2NMkRfHYeoBOXuABJ3tzbogtwZub
-      Handler: reinvent_sid345_lambda.handler.sid345_handler
+        S3Key: reinvent_sid345_python.zip
+        S3ObjectVersion: A94agFajfyh_ni16AABnkyHUepVhs7Et
+      Handler: reinvent_sid345.handler.lambda_handler
       ## We don't need this much memory, but setting a high memorysize means we get more CPU allocated, which reduces
       ## startup times.
       MemorySize: 1536
@@ -342,7 +344,7 @@ Resources:
       IsLogging: true
       CloudWatchLogsLogGroupArn: !GetAtt CloudtrailLogGroup.Arn
       CloudWatchLogsRoleArn: !GetAtt CloudtrailRole.Arn
-# an S3 bucket is still required, even when using CWlogs delivery
+      # an S3 bucket is still required, even when using CWlogs delivery
       S3BucketName: !Ref S3Bucket
     DependsOn:
      # We need to wait for the various IAM policies to be configured, as CW logs will validate these policies when the
