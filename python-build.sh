@@ -16,7 +16,11 @@
 
 BUCKET=${1?Bucket name must be provided}
 FILENAME='reinvent_sid345_python.zip'
+DIR=reinvent_sid345_artifacts
 
+sudo yum install -y python36
+
+cd $DIR
 rm -rf py36test dep_dir
 virtualenv py36test -p python3.6
 source py36test/bin/activate

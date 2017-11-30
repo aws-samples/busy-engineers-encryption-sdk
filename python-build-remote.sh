@@ -22,11 +22,8 @@
 #   NOTE: This needs to be a recent version of Amazon Linux,
 #    so I recommend just creating a new instance for this
 #    workshop.
-#   a. This instance needs to have IAM credentials available
-#      that can write to the specified S3 bucket.
-#   b. Python 3.6 must be available on this host. With
-#      recent Amazon Linux, this is available through yum:
-#       yum install python36
+#   NOTE: This instance needs to have IAM credentials available
+#    that can write to the specified S3 bucket.
 # 3. SSH key that grants access to above host.
 #
 #Usage:
@@ -47,12 +44,13 @@ HOST=${1?Host name must be provided}
 KEY=${2?Key must be provided}
 # 3 : bucket name
 BUCKET=${3?Bucket name must be provided}
+DIR=reinvent_sid345_artifacts
 
 cd webapp-python
 rm -rf dist
 python3 setup.py sdist
 cd ..
-ssh -i $KEY $USER@$HOST "rm reinvent_sid345*"
-scp -i $KEY python-build.sh $USER@${HOST}:~/
-scp -i $KEY webapp-python/dist/* $USER@${HOST}:~/
-ssh -i $KEY $USER@$HOST "chmod 755 python-build.sh; ./python-build.sh $BUCKET"
+ssh -i $KEY $USER@$HOST "rm -rf $DIR; mkdir $DIR"
+scp -i $KEY python-build.sh $USER@${HOST}:~/$DIR/
+scp -i $KEY webapp-python/dist/* $USER@${HOST}:~/$DIR/
+ssh -i $KEY $USER@$HOST "chmod 755 $DIR/python-build.sh; ./$DIR/python-build.sh $BUCKET"
