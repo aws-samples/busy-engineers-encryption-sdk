@@ -17,7 +17,8 @@
 # that zip file to an S3 bucket.
 #
 #Prerequisites:
-# 1. SSH-accessible EC2 instance running Amazon Linux
+# 1. Python 3 available locally.
+# 2. SSH-accessible EC2 instance running Amazon Linux
 #   NOTE: This needs to be a recent version of Amazon Linux,
 #    so I recommend just creating a new instance for this
 #    workshop.
@@ -26,7 +27,7 @@
 #   b. Python 3.6 must be available on this host. With
 #      recent Amazon Linux, this is available through yum:
 #       yum install python36
-# 2. SSH key that grants access to above host.
+# 3. SSH key that grants access to above host.
 #
 #Usage:
 # ./python-build-remote.sh $HOST_NAME $SSH_KEY $BUCKET_NAME
