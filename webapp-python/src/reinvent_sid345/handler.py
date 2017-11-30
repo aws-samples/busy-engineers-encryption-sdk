@@ -115,6 +115,7 @@ def _parse_message(message):
         info['decryptInfo'] += 'KMS calls: {}'.format(0)
     except Exception as error:
         info['decryptError'] = traceback.format_exc()
+    message.delete()
     return info
 
 
