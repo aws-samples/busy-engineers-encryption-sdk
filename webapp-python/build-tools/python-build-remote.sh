@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
@@ -46,11 +47,7 @@ KEY=${2?Key must be provided}
 BUCKET=${3?Bucket name must be provided}
 DIR=reinvent_sid345_artifacts
 
-cd webapp-python
-rm -rf dist
-python3 setup.py sdist
-cd ..
 ssh -i $KEY $USER@$HOST "rm -rf $DIR; mkdir $DIR"
-scp -i $KEY python-build.sh $USER@${HOST}:~/$DIR/
-scp -i $KEY webapp-python/dist/* $USER@${HOST}:~/$DIR/
+scp -i $KEY build-tools/python-build.sh $USER@${HOST}:~/$DIR/
+scp -i $KEY dist/* $USER@${HOST}:~/$DIR/
 ssh -i $KEY $USER@$HOST "chmod 755 $DIR/python-build.sh; ./$DIR/python-build.sh $BUCKET"

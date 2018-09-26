@@ -17,12 +17,7 @@ import json
 
 def bad_request():
     """Return value for a bad request."""
-    return {
-        'isBase64Encoded': True,
-        'statusCode': 400,
-        'headers': {},
-        'body': 'Bad request'
-    }
+    return {"isBase64Encoded": False, "statusCode": 400, "headers": {}, "body": "Bad request"}
 
 
 def json_response(status_code, data):
@@ -31,18 +26,13 @@ def json_response(status_code, data):
     :param int status_code: HTTP status code to include in response
     :param data: JSON-encodeable data to include in response as body
     """
-    header = {'Content-Type': 'application/json'}
+    header = {"Content-Type": "application/json"}
     try:
-        body = base64.b64encode(json.dumps(data).encode('utf-8')).decode('utf-8')
+        body = base64.b64encode(json.dumps(data).encode("utf-8")).decode("utf-8")
     except TypeError:
-        body = 'Internal error'
+        body = "Internal error"
         status_code = 500
-    return {
-        'isBase64Encoded': True,
-        'statusCode': status_code,
-        'headers': header,
-        'body': body
-    }
+    return {"isBase64Encoded": True, "statusCode": status_code, "headers": header, "body": body}
 
 
 def json_error(message):
@@ -50,4 +40,4 @@ def json_error(message):
 
     :param str message: Error message to include in response
     """
-    return json_response(200, {'status': 'error', 'error': message})
+    return json_response(200, {"status": "error", "error": message})

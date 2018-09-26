@@ -10,14 +10,14 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""reinvent_sid345."""
+"""Python 3.6 Lambda for SID345 Re:Invent workshop."""
 from setuptools import find_packages, setup
 
 setup(
-    name='reinvent_sid345',
-    version='0.0.2',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
-    license='Apache License 2.0',
-    install_requires=['aws_encryption_sdk>=1.3.2']
+    name="reinvent_sid345",
+    version="0.0.3",
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    license="Apache License 2.0",
+    install_requires=["aws_encryption_sdk>=1.3.2"],
 )
