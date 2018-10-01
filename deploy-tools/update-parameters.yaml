@@ -1,0 +1,9 @@
+Parameters:
+  CodeKey:
+    Type: String
+    Description: >-
+      The S3 object key containing the Lambda zip
+  CodeVersion:
+    Type: String
+    Description: >-
+      The S3 object version containing the Lambda zip

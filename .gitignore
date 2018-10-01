@@ -7,4 +7,7 @@ target
 *.egg-info
 /build/
 */dist/
-*/.tox/
+.tox/
+reinvent_sid345_artifacts/
+dist/
+.python-version

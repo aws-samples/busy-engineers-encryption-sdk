@@ -14,8 +14,8 @@
 #
 #This helper script will package the Python project in
 # webapp-python, send it to a remote server, build it
-# there, package it as a zip file for Lambda, and upload
-# that zip file to an S3 bucket.
+# there, package it as a zip file for Lambda, and download
+# that zip file back to this host.
 #
 #Prerequisites:
 # 1. Python 3 available locally.
@@ -23,31 +23,29 @@
 #   NOTE: This needs to be a recent version of Amazon Linux,
 #    so I recommend just creating a new instance for this
 #    workshop.
-#   NOTE: This instance needs to have IAM credentials available
-#    that can write to the specified S3 bucket.
 # 3. SSH key that grants access to above host.
 #
 #Usage:
-# ./python-build-remote.sh $HOST_NAME $SSH_KEY $BUCKET_NAME
+# ./python-build-remote.sh $HOST_NAME $SSH_KEY
 #
 #Output:
 #You will see all of the normal output from the commands
 # that this script runs both on your local system and on
-# the remote host. You can mostly ignore these. The only
-# output that is necessary is the final S3 ListObjectVersions
-# JSON that shows you the new VersionId of the uploaded
-# file in S3.
+# the remote host. You can mostly ignore these.
 
 USER='ec2-user'
 # 1 : host
 HOST=${1?Host name must be provided}
 # 2 : key
 KEY=${2?Key must be provided}
-# 3 : bucket name
-BUCKET=${3?Bucket name must be provided}
-DIR=reinvent_sid345_artifacts
 
-ssh -i $KEY $USER@$HOST "rm -rf $DIR; mkdir $DIR"
-scp -i $KEY build-tools/python-build.sh $USER@${HOST}:~/$DIR/
-scp -i $KEY dist/* $USER@${HOST}:~/$DIR/
-ssh -i $KEY $USER@$HOST "chmod 755 $DIR/python-build.sh; ./$DIR/python-build.sh $BUCKET"
+DIR='reinvent_sid345_artifacts'
+FILENAME='reinvent_sid345_python.zip'
+
+rm -rf ${DIR}
+mkdir ${DIR}
+ssh -i ${KEY} ${USER}@${HOST} "rm -rf ${DIR}; mkdir ${DIR}"
+scp -i ${KEY} build-tools/python-build.sh ${USER}@${HOST}:~/${DIR}/
+scp -i ${KEY} dist/* ${USER}@${HOST}:~/${DIR}/
+ssh -i ${KEY} ${USER}@${HOST} "chmod 755 ${DIR}/python-build.sh; ./${DIR}/python-build.sh"
+scp -i ${KEY} ${USER}@${HOST}:~/${DIR}/${FILENAME} ${DIR}/${FILENAME}

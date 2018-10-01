@@ -32,10 +32,7 @@
 # JSON that shows you the new VersionId of the uploaded
 # file in S3.
 
-
-# 1 : bucket name
-BUCKET=${1?Bucket name must be provided}
-DIR=reinvent_sid345_artifacts
+DIR='reinvent_sid345_artifacts'
 
 rm -rf ${DIR}
 mkdir ${DIR}
@@ -43,4 +40,4 @@ cp build-tools/python-build.sh ${DIR}/
 cp dist/* ${DIR}/
 chmod 755 ${DIR}/python-build.sh
 cd ${DIR}
-./python-build.sh ${BUCKET}
+python-build.sh

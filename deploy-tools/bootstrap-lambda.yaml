@@ -1,0 +1,10 @@
+Code:
+  ZipFile: !Sub |
+    def handler(event, context):
+        return {
+            "isBase64Encoded": True,
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json"},
+            "body": "Service is bootstrapped but not yet deployed"
+        }
+Handler: index.handler

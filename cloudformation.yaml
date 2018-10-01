@@ -10,11 +10,7 @@
 # and limitations under the License.
 
 AWSTemplateFormatVersion: 2010-09-09
-Parameters:
-  CodeKey:
-    Type: String
-    Description: >-
-      The key that the lambda function code has been uploaded to
+%PARAMETERS%
 Resources:
   ## The main S3 bucket. This must use the same logical resource ID as bootstrap.yaml.
   S3Bucket:
@@ -54,7 +50,6 @@ Resources:
     Type: 'AWS::ApiGateway::RestApi'
     Properties:
       BinaryMediaTypes:
-      # TODO: Remove this and use modeled JSON structures?
         - '*/*'
       Name: !Ref 'AWS::StackName'
   RestAPICloudWatch:
@@ -289,15 +284,12 @@ Resources:
   LambdaFunc:
     Type: 'AWS::Lambda::Function'
     Properties:
-      Code:
-        S3Bucket: !Ref S3Bucket
-        S3Key: !Ref CodeKey
-      Handler: example.EntryPoint
+      %LAMBDACONFIG%
       ## We don't need this much memory, but setting a high memorysize means we get more CPU allocated, which reduces
       ## startup times.
       MemorySize: 1536
       Role: !GetAtt LambdaRole.Arn
-      Runtime: java8
+      Runtime: python3.6
       Timeout: 30
       Environment:
         Variables:
@@ -305,37 +297,6 @@ Resources:
           queue_url: !Ref SQSQueue
           use_cache: true
           log_group_name: !Ref CloudtrailLogGroup
-
-# To use this Python Lambda Function:
-# 1. Use "mvn deploy" to create the S3 bucket and all other resources
-# 2. Either comment out the above "LambdaFunc" resource or change its name
-# 3. Uncomment the below "LambdaFunc" resource
-# 4. Use python-build-remote.sh to build the Python package and upload it to the S3 bucket
-# 5. Update the S3ObjectVersion value below with the value you received from python-build-remote.sh
-# 6. Use "mvn deploy" to update the stack with the new Lambda Function
-#
-# To apply any updates to the Python Lambda Function, repeat steps 4, 5, and 6.
-#
-#  LambdaFunc:
-#    Type: 'AWS::Lambda::Function'
-#    Properties:
-#      Code:
-#        S3Bucket: !Ref S3Bucket
-#        S3Key: reinvent_sid345_python.zip
-#        S3ObjectVersion: 1qWn1OjoiAs4jv03EX3hCylttOEh7TIb
-#      Handler: reinvent_sid345.handler.lambda_handler
-#      ## We don't need this much memory, but setting a high memorysize means we get more CPU allocated, which reduces
-#      ## startup times.
-#      MemorySize: 1536
-#      Role: !GetAtt LambdaRole.Arn
-#      Runtime: python3.6
-#      Timeout: 30
-#      Environment:
-#        Variables:
-#          kms_key_id: !GetAtt KMSKey.Arn
-#          queue_url: !Ref SQSQueue
-#          use_cache: true
-#          log_group_name: !Ref CloudtrailLogGroup
 
   MainAppPermissions:
     Type: 'AWS::Lambda::Permission'

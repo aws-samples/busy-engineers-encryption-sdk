@@ -15,13 +15,12 @@
 #This helper script builds the zip file for Lambda. See
 # python-build-remote.sh for more information.
 
-BUCKET=${1?Bucket name must be provided}
 FILENAME='reinvent_sid345_python.zip'
-DIR=reinvent_sid345_artifacts
+DIR='reinvent_sid345_artifacts'
 
 sudo yum install -y python36
 
-cd $DIR
+cd ${DIR}
 rm -rf py36test dep_dir
 virtualenv py36test -p python3.6
 source py36test/bin/activate
@@ -31,5 +30,3 @@ deactivate
 cd dep_dir
 zip -r ../${FILENAME} .
 cd ..
-aws s3 cp ${FILENAME} s3://${BUCKET}/
-aws s3api list-object-versions --bucket $BUCKET --prefix ${FILENAME} --max-items 1
