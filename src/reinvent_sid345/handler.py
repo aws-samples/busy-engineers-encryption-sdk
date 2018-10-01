@@ -21,6 +21,7 @@ from itertools import zip_longest
 
 import boto3
 
+from reinvent_sid345._log_listener import KmsLogListener
 from reinvent_sid345.encrypt_decrypt import EncryptDecrypt
 from reinvent_sid345.responses import bad_request, json_error, json_response
 
@@ -30,6 +31,7 @@ MIN_ROUNDS = 10
 MAX_MESSAGE_BATCH_SIZE = 50
 _LOGGER = logging.getLogger()
 _LOGGER.setLevel(logging.DEBUG)
+_LOG_WATCHER = KmsLogListener()
 logging.basicConfig(level=logging.DEBUG)
 _is_setup = False
 
@@ -68,10 +70,11 @@ def lambda_handler(event, context):  # pylint: disable=unused-argument
 
 def send(request):
     """Handle send requests."""
+    _LOG_WATCHER.reset_matching_entries()
     data = request["data"]
     ciphertext = _encrypt_decrypt.encrypt(data)
     _sqs_queue.send_message(MessageBody=ciphertext)
-    return json_response(200, {"status": "ok", "kmsCallCount": 0})
+    return json_response(200, {"status": "ok", "kmsCallCount": _LOG_WATCHER.matching_entries})
 
 
 def receive(request):  # pylint: disable=unused-argument
@@ -88,13 +91,19 @@ def receive(request):  # pylint: disable=unused-argument
             # Delete them once we have them?
             raw_messages.append(message)
 
-    parsed_messages = [_parse_message(message) for message in raw_messages]
-    response = {"status": "ok", "messages": parsed_messages, "kmsCallCount": 0}
+    parsed_messages = []
+    total_kms_calls = 0
+    for message in raw_messages:
+        parsed, kms_calls = _parse_message(message)
+        parsed_messages.append(parsed)
+        total_kms_calls += kms_calls
+    response = {"status": "ok", "messages": parsed_messages, "kmsCallCount": total_kms_calls}
     return json_response(200, response)
 
 
 def _parse_message(message):
     """Parse and decrypt a SQS message into the expected JSON structure."""
+    _LOG_WATCHER.reset_matching_entries()
     _LOGGER.debug("MESSAGE:")
     _LOGGER.debug(message)
     _LOGGER.debug("MESSAGE ATTRIBUTES:")
@@ -107,11 +116,11 @@ def _parse_message(message):
     }
     try:
         info["plaintext"] = json.dumps(_encrypt_decrypt.decrypt(message.body), indent=4, sort_keys=True)
-        info["decryptInfo"] += "KMS calls: {}".format(0)
+        info["decryptInfo"] += "KMS calls: {}".format(_LOG_WATCHER.matching_entries)
     except Exception:  # pylint: disable=broad-except
         info["decryptError"] = traceback.format_exc()
     message.delete()
-    return info
+    return info, _LOG_WATCHER.matching_entries
 
 
 def _iso_format_datetime_from_sent_timestamp(sent_timestamp):
