@@ -1,6 +1,13 @@
 We've prepared a simple example application. We'll use this application to explore different ways
 to encrypt data. Before we dive in, you will need to set up your environment.
 
+# Note for workshop attendees
+
+If you are working through these examples in a Cloud9 workshop setting, your environment is already configured.
+
+You may skip the setup portions and proceed directly to
+[Deploying the example application](#deploying-the-example-application).
+
 # Prerequisites
 
 Install and set up the required components:
@@ -11,13 +18,17 @@ Install and set up the required components:
 * [Maven 3](https://maven.apache.org/)
 * [Git](https://git-scm.com/)
 
+The [EC2 Quickstart](#ec2-quickstart) section will walk you through setting these up.
+
 ## AWS credentials
 
 You'll need to configure the AWS CLI's default credentials to have
-_Administrator_ access. Because we'll be deploying a lambda application, we'll
-need to create an IAM role for it to use when talking to AWS services, and this
-requires Administrator access - Power User is not sufficient. The roles created
-are restricted to only having access to the specific resources created as part
+_Administrator_ access.
+
+We'll be deploying a Lambda application, so we'll need to create an IAM role for it to use when talking to AWS
+services, and this requires Administrator access - Power User is not sufficient.
+
+The roles created are restricted to only having access to the specific resources created as part
 of this demo.
 
 For help setting credentials for the CLI, see [the CLI
@@ -29,79 +40,92 @@ If you'd like to set up an EC2 instance that is set up to use as a development
 environment for this demo, here's some quickstart instructions to get you set
 up.
 
-If you've already got a working java development environment, feel free to skip
+If you've already got a working Java development environment, feel free to skip
 ahead to the next section where we'll deploy the sample application.
 
 ## Configuring and launching the instance
 
 First, create an Administrator access role that the EC2 instance will use to
-access your account. Note: Because this is granting a high level of privileges
-to the instance, we recommend doing this in a test account.
+access your account.
 
-First, open the IAM console. Click "roles" on the left to go to [the roles
-console](https://console.aws.amazon.com/iam/home?region=us-west-2#/roles), then
-click the "Create Role" button. Under "Choose the service that will use this
-role", select "EC2", then select "EC2" for the use case and proceed to the next
-page. Select AdministratorAccess, then on the next page set some
-easy-to-remember name for the role (e.g. "sid345-admin").
+**Note:** Because this is granting a high level of privileges to the instance, we recommend doing this in a test
+account.
 
-Now that you have a role created, we'll deploy a linux instance to use as our
-launching point. Open [the EC2 console for
-ca-central-1](https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances:sort=instanceId).
+1. Log in to the AWS Console.
+1. Go to [the IAM console's Roles
+section](https://console.aws.amazon.com/iam/home?region=ca-central-1#/roles).
+1. Click the "Create Role" button.
+1. Under "Choose the service that will use this role", select "EC2", then select "EC2" for the use case and proceed to the next
+page.
+1. Select `AdministratorAccess`, and proceed to the next page.
+1. Set some easy-to-remember name for the role such as "sid345-admin".
+
+Now that you have a role created, we'll deploy a Linux instance to use as our
+launching point.
+
+Open [the EC2 console for ca-central-1](https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances:sort=instanceId).
+
 If you've not launched any instances here before, you'll first need to either
 [create a new key
 pair](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair)
 or [import an existing ssh
 key](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#how-to-generate-your-own-key-and-import-it-to-aws)
-- instructions are provided at those links.
+using the instructions at those links.
 
-Once you have the key pair set up, we can launch an instance. Click the big
-blue 'launch instance' button and select the 'Amazon Linux AMI 2017.09.1 (HVM),
-SSD Volume Type' AMI. Click 'configure instance details' and make sure
-'auto-assign public IP' is set to enabled. **Also make sure you select the role
-you created under "IAM role"**. Click 'review and launch' and then 'launch',
-and select the keypair you just created or imported. Check the box and click
-launch instances.
+Once you have the key pair set up, we can launch an instance.
+
+1. Click the blue 'Launch Instance' button.
+1. Select the 'Amazon Linux AMI 2018.03.0 (HVM), SSD Volume Type' AMI.
+1. Click 'Configure Instance Details' and make sure 'Auto-assign Public IP' is **Enabled**.
+1. **In 'IAM Role', select the role you created above.** ("sid345-admin", or your preferred name)
+1. Click 'Review and Launch'.
+1. Click 'Launch'.
+1. In the provided dialog, select the keypair you just created or imported.
+1. Click 'Launch Instances'.
 
 ## Setting up the development environment
 
-Once the instance launches, you'll see it at the [instance
-list](https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:search=i-03c3cf1f6006f0238;sort=instanceId),
-and can copy the public DNS hostname. You can then log into this instance using
-username `ec2-user` and the keypair you created before - see the [EC2 getting
-started for
-details](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html)
-if this is your first time using EC2 as well.
+Once the instance launches, you'll see it in the [instance
+list](https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances).
 
-Once you're logged in, first use yum to upgrade java and install git:
+Copy the public DNS hostname. You can then log into this instance using
+username `ec2-user` and the keypair you created before.
+
+If this is your first time using EC2, see the [EC2 getting
+started documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) for more detail.
+
+Once you're logged in, use `yum` to upgrade Java and install git:
 
     sudo yum install java-1.8.0-openjdk-devel git
 
-Select the new version of java as well:
+Use `alternatives` to ensure your new Java version is the default as follows:
 
-	[ec2-user@ip-10-0-0-137 ~]$ sudo /usr/sbin/alternatives  --config java
+    sudo /usr/sbin/alternatives  --config java
 
-	There are 2 programs which provide 'java'.
+For example:
 
-	  Selection    Command
-	-----------------------------------------------
-	*+ 1           /usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java
-	   2           /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+    [ec2-user@ip-172-31-2-67 ~]$ sudo /usr/sbin/alternatives  --config java
+    
+    There is 1 program that provides 'java'.
+    
+    Selection    Command
+    -----------------------------------------------
+    *+ 1           java-1.8.0-openjdk.x86_64 (/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.amzn2.x86_64/jre/bin/java)
+    
+    Enter to keep the current selection[+], or type selection number
 
-	Enter to keep the current selection[+], or type selection number:
+At the prompt select the number corresponding to 1.8.0 (`1` here).
 
-At the prompt select the number corresponding to 1.8.0 (`2` here).
+Next we'll fetch Maven:
 
-Next we'll fetch maven:
+    wget https://archive.apache.org/dist/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz
+    wget https://archive.apache.org/dist/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz.sha1
 
-    wget http://apache.osuosl.org/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz
-    wget https://www.apache.org/dist/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz.md5
+Since Maven uses an unsecured connection to download the Maven binaries themselves, it's good practice to check the hash of the binaries:
 
-Since maven uses an unsecured connection to download the maven binaries themselves, it's good practice to check the hash of the binaries:
-
-    [ec2-user@ip-10-0-0-137 ~]$ md5sum apache-maven-3.5.2-bin.tar.gz; cat apache-maven-3.5.2-bin.tar.gz.md5; echo
-    948110de4aab290033c23bf4894f7d9a  apache-maven-3.5.2-bin.tar.gz
-    948110de4aab290033c23bf4894f7d9a
+    [ec2-user@ip-10-0-0-137 ~]$ sha1sum apache-maven-3.5.2-bin.tar.gz; cat apache-maven-3.5.2-bin.tar.gz.sha1; echo
+    190dcebb8a080f983af4420cac4f3ece7a47dd64  apache-maven-3.5.2-bin.tar.gz
+    190dcebb8a080f983af4420cac4f3ece7a47dd64
 
 Make sure the two hashes match before proceeding.
 
@@ -109,14 +133,12 @@ Once you've verified the integrity of maven, we'll need to unpack it and add it 
 
     tar xzvf apache-maven-3.5.2-bin.tar.gz
     PATH=$PWD/apache-maven-3.5.2/bin:$PATH
+    echo "PATH=$PWD/apache-maven-3.5.2/bin:$PATH" >> ~/.bash_profile
 
-If you reconnect to your EC2 instance you'll need to reset your path by running
-the `PATH=...` command again.
+At this point you should have a Linux system that can deploy the example application with the instructions below.
 
-At this point you should have a linux system that is set up to be able to
-deploy the example application by following the instructions below. To edit
-files, you can either use the built-in `nano` editor, or install another editor
-(e.g. vim or emacs) if that is your preference.
+To edit files, the `nano` editor is built-in. You can also install or use another editor of your choice, such as `vim`
+or `emacs`.
 
 # Deploying the example application
 
