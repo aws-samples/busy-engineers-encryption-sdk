@@ -1,3 +1,10 @@
+
+.. _Exercise 3:
+
+****************************
+Exercise 3: Data Key Caching
+****************************
+
 You may have noticed by now that when you send or receive messages, we report
 the number of KMS calls issued. Currently, every message you send or receive
 incurs a single KMS call. While KMS calls are inexpensive and have high default
@@ -8,22 +15,26 @@ KMS call every time you encrypt and decrypt to be limiting.
 In this exercise we'll explore the caching feature of the AWS Encryption SDK
 and how it can help mitigate this issue.
 
-# Before we start
+Before we start
+===============
 
-We'll assume that you've completed the code changes in [exercise
-2](2-encryption-sdk.md) first. If you haven't, you can use this git command to
+We'll assume that you've completed the code changes in :ref:`Exercise 2`
+first. If you haven't, you can use this git command to
 catch up:
+
+.. code-block:: bash
 
     git checkout -f -B exercise-3 origin/exercise-3-start
 
 This will give you a codebase that already has the base64 changes applied.
 Note that any uncommitted changes you've made already will be lost.
 
-# How the caching feature works
+How the caching feature works
+=============================
 
 You enable the caching feature of the AWS Encryption SDK by creating a
-"[caching crypto materials
-manager](http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/implement-caching.html)"
+"`caching crypto materials manager
+<http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/implement-caching.html>`_"
 and using it instead of your master key in encrypt and decrypt operations.
 Crypto materials managers are plugins that can manipulate encrypt and decrypt
 requests in certain ways.
@@ -35,9 +46,12 @@ and reuse that as well.
 
 The code changes for this are fairly small, so let's jump right into it.
 
-## Step by step
+Step by step
+------------
 
 First, we'll add the new imports we'll need:
+
+.. code-block:: java
 
     import java.util.concurrent.TimeUnit;
     import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
@@ -46,12 +60,16 @@ First, we'll add the new imports we'll need:
 
 Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
 
+.. code-block:: java
+
     private final CryptoMaterialsManager materialsManager;
 
 It's important to make this a field instead of initializing it for each call,
 as we need the cache to persist from one call to the next.
 
 In our constructor, we'll set up our master key, cache, and caching materials manager:
+
+.. code-block:: java
 
     KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
         .getMasterKey(keyId);
@@ -67,17 +85,20 @@ In our constructor, we'll set up our master key, cache, and caching materials ma
 And finally, we'll use the materialsManager instead of our masterKey in our
 encrypt and decrypt operations:
 
+.. code-block:: java
+
     byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
 
     // ...
 
     CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(materialsManager, ciphertextBytes);
 
-Once you finish the changes, `mvn deploy` and try sending a few messages in a
+Once you finish the changes, ``mvn deploy`` and try sending a few messages in a
 row. You'll see that only one message out of ten result in a KMS call, for both
 send and receive.
 
-# Encryption context issues
+Encryption context issues
+=========================
 
 If you followed the previous exercise to the end, you'll remember we added the
 order ID to the encryption context. If not, now's a good time to add it.
@@ -93,6 +114,8 @@ won't do us any good.
 To get benefit from caching here, we'll need to strike a different balance. For
 example, instead of putting the order ID in the audit log, we could put an
 _approximate_ timestamp, like so:
+
+.. code-block:: java
 
     context.put("approximate timestamp", "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
 

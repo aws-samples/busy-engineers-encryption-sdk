@@ -6,7 +6,7 @@ target
 *.pyc
 *.pyo
 *.egg-info
-/build/
+build/
 */dist/
 .tox/
 reinvent_sid345_artifacts/
