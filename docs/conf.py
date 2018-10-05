@@ -12,18 +12,17 @@ copyright = u"%s, Amazon" % datetime.now().year  # pylint: disable=redefined-bui
 # for source files.
 exclude_trees = ["_build"]
 
+extensions = ['sphinx_tabs.tabs']
+
 pygments_style = "sphinx"
 
 autoclass_content = "both"
 autodoc_default_flags = ["show-inheritance", "members"]
 autodoc_member_order = "bysource"
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "alabaster"
 html_static_path = ["_static"]
 htmlhelp_basename = "%sdoc" % project
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"python": ("http://docs.python.org/", None)}
 
 # autosummary
 autosummary_generate = True

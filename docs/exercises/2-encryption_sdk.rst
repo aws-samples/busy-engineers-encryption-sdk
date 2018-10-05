@@ -11,16 +11,26 @@ limitations, as we'll see.
 Before we start
 ===============
 
-We'll assume that you've completed the code changes in [exercise
-1](1-kms_encryption.md) first. If you haven't, you can use this git command to
-catch up:
+We'll assume that you've completed the code changes in :ref:`Exercise 1`
+first. If you haven't, you can use this git command to catch up:
 
-.. code-block:: bash
+.. tabs::
 
-    git checkout -f -B exercise-2 origin/exercise-2-start
+    .. group-tab:: Java
+
+        .. code-block:: bash
+
+            git checkout -f -B exercise-2 origin/exercise-2-start
+
+    .. group-tab:: Python
+
+        .. code-block:: bash
+
+            git checkout -f -B exercise-2 origin/exercise-2-start-python
 
 This will give you a codebase that already has the base64 changes applied.
 Note that any uncommitted changes you've made already will be lost.
+
 
 Exploring the limitations of direct KMS
 =======================================
@@ -144,7 +154,7 @@ field, and see how KMS rejects the message:
     make one worthy of the name.
 
     Hitt, Parker. (1916) MANUAL FOR THE SOLUTION OF MILITARY CIPHERS.
-    Retrieved from http://www.gutenberg.org/ebooks/48871
+    Retrieved from https://www.gutenberg.org/ebooks/48871
 
 
 You may also have noticed that using the KMS client directly requires
@@ -166,91 +176,182 @@ Step by step
 ------------
 
 First, let's make sure the encryption SDK is set up as a dependency correctly.
-Open up ``webapp/pom.xml`` and add this block in the ``<dependencies>`` section:
 
-.. code-block:: xml
 
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-encryption-sdk-java</artifactId>
-            <version>1.3.1</version>
-        </dependency>
+.. tabs::
+
+    .. group-tab:: Java
+
+        Open up ``webapp/pom.xml`` and add this block in the ``<dependencies>`` section:
+
+        .. code-block:: xml
+
+                <dependency>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-encryption-sdk-java</artifactId>
+                    <version>1.3.1</version>
+                </dependency>
+
+    .. group-tab:: Python
+
+        Open ``setup.py`` and add this requirement to ``install_requires``:
+
+        .. code-block:: python
+
+            install_requires=["aws_encryption_sdk>=1.3.2"]
 
 Now, let's add some imports:
 
-.. code-block:: java
+.. tabs::
 
-    import java.util.Objects;
-    import com.amazonaws.encryptionsdk.AwsCrypto;
-    import com.amazonaws.encryptionsdk.CryptoResult;
-    import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
-    import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
+    .. group-tab:: Java
+
+        .. code-block:: java
+
+            import java.util.Objects;
+            import com.amazonaws.encryptionsdk.AwsCrypto;
+            import com.amazonaws.encryptionsdk.CryptoResult;
+            import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+            import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
+
+    .. group-tab:: Python
+
+        .. code-block:: python
+
+            import aws_encryption_sdk
 
 The first step to using the Encryption SDK is setting up a master key (or
 master key provider) to decide which keys will be used for the encryption.
-Once we set up our master key, we won't need to keep around the ``keyId`` field,
-so go ahead and replace it with:
+Once we set up our master key, we won't need to keep around the key ID,
+so we can discard that value.
 
-.. code-block:: java
+.. tabs::
 
-    private final KmsMasterKey masterKey;
+    .. group-tab:: Java
 
-In our constructor, we'll create the master key like so:
+        We won't need the class attribute for ``keyID``, so replace that with ``masterKey``
+        for the KMS master key.
 
-.. code-block:: java
+        .. code-block:: java
 
-    this.masterKey = new KmsMasterKeyProvider(keyId)
-        .getMasterKey(keyId);
+            private final KmsMasterKey masterKey;
+
+        In our constructor, we'll create the master key like so:
+
+        .. code-block:: java
+
+            this.masterKey = new KmsMasterKeyProvider(keyId)
+                .getMasterKey(keyId);
+
+    .. group-tab:: Python
+
+        We won't need to keep the key ID around, so replace that in ``__init__`` with a new ``KMSMasterKeyProvider``.
+
+        .. code-block:: python
+
+            self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+
 
 The actual encryption process is much simpler than with KMS. We'll keep the
-context hashmap mostly the same, and the body of encrypt can just be:
+encryption context mostly the same, and the body of encrypt can just be:
 
-.. code-block:: java
+.. tabs::
 
-    public String encrypt(JsonNode data) throws IOException {
-        FormData formValues = MAPPER.treeToValue(data, FormData.class);
+    .. group-tab:: Java
 
-        // We can access specific form fields using values in the parsed FormData object.
-        LOGGER.info("Got form submission for order " + formValues.orderid);
+        .. code-block:: java
 
-        byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
+            public String encrypt(JsonNode data) throws IOException {
+                FormData formValues = MAPPER.treeToValue(data, FormData.class);
 
-        HashMap<String, String> context = new HashMap<>();
-        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+                // We can access specific form fields using values in the parsed FormData object.
+                LOGGER.info("Got form submission for order " + formValues.orderid);
 
-        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+                byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
 
-        return Base64.getEncoder().encodeToString(ciphertext);
-    }
+                HashMap<String, String> context = new HashMap<>();
+                context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
 
-For decrypt, we no longer need to construct an encryption context, because the
+                byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+
+                return Base64.getEncoder().encodeToString(ciphertext);
+            }
+
+    .. group-tab:: Python
+
+        .. code-block:: python
+
+            def encrypt(self, data):
+                """Encrypt data.
+                :param data: JSON-encodeable data to encrypt
+                :returns: Base64-encoded, encrypted data
+                :rtype: str
+                """
+                encryption_context = {self._message_type: self._type_order_inquiry}
+                ciphertext, _header = aws_encryption_sdk.encrypt(
+                    source=json.dumps(data),
+                    key_provider=self.master_key_provider,
+                    encryption_context=encryption_context,
+                )
+                return base64.b64encode(ciphertext).decode("utf-8")
+
+For decrypt, we no longer need to construct an encryption context because the
 Encryption SDK records the original context for us. However, this means we now
 need to check that the context is consistent with what we expected.
 Decrypt therefore ends up looking like:
 
-.. code-block:: java
+.. tabs::
 
-    public JsonNode decrypt(String ciphertext) throws IOException {
-        byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+    .. group-tab:: Java
 
-        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+        .. code-block:: java
 
-        // Check that we have the correct type
-        if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
-            throw new IllegalArgumentException("Bad message type in decrypted message");
-        }
+            public JsonNode decrypt(String ciphertext) throws IOException {
+                byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
-        return MAPPER.readTree(result.getResult());
-    }
+                CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+
+                // Check that we have the correct type
+                if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
+                    throw new IllegalArgumentException("Bad message type in decrypted message");
+                }
+
+                return MAPPER.readTree(result.getResult());
+            }
+
+    .. group-tab:: Python
+
+        .. code-block:: python
+
+            def decrypt(self, data):
+                """Decrypt data.
+                :param bytes data: Base64-encoded, encrypted data
+                :returns: JSON-decoded, decrypted data
+                """
+                ciphertext = base64.b64decode(data)
+                plaintext, header = aws_encryption_sdk.decrypt(
+                    source=ciphertext,
+                    key_provider=self.master_key_provider,
+                )
+
+                try:
+                    if header.encryption_context[self._message_type] != self._type_order_inquiry:
+                        raise KeyError()  # overloading KeyError to use the same exit whether wrong or missing
+                except KeyError:
+                    raise ValueError("Bad message type in decrypted message")
+
+                return json.loads(plaintext)
 
 At this point you should be able to deploy and test the application. Try
 entering the very large message from the start of this exercise; it should work
 now.
 
-_Note: If you input a message larger than about 90k you'll still run into
-message size limits related to our use of SQS as well. If handling very large
-messages was needed for your application, you might want to consider putting
-the message in S3, and sending a reference to it via SQS._
+.. note::
+
+    If you input a message larger than about 90k you'll still run into
+    message size limits related to our use of SQS as well. If handling very large
+    messages was needed for your application, you might want to consider putting
+    the message in S3, and sending a reference to it via SQS.
 
 Adding additional audit metadata to your encryption context
 ===========================================================
@@ -259,16 +360,29 @@ Now that you're using the encryption SDK, it's a lot easier to put
 dynamically-changing data in the encryption context. For example, we can record
 the order ID just by doing:
 
-.. code-block:: java
+.. tabs::
 
-    context.put("order ID", formValues.orderid);
+    .. group-tab:: Java
+
+        .. code-block:: java
+
+            context.put("order ID", formValues.orderid);
+
+    .. group-tab:: Python
+
+        .. code-block:: python
+
+            encryption_context = {
+                self._message_type: self._type_order_inquiry,
+                self._timestamp: str(int(time.time() / 3600.0)),
+            }
 
 No changes are needed in decrypt (however, it's good practice to check at least
 that the key exists now). If you add this, send some messages, and then check
-your cloudtrail logs after 10 minutes, you'll see the encryption context values
+your CloudTrail logs after 10 minutes, you'll see the encryption context values
 flowing through.
 
-One caveat to note is that encryption context values can't be empty strings; to
-deal with this, you can either use special values to indicate empty/null
-fields, or only add the key if the field has a meaningful value (or require
-that the field be present).
+One caveat to note is that encryption context values can't be empty strings. To
+deal with this you can either use special values to indicate empty/null
+fields, or only add the key if the field has a meaningful value, or require
+that the field be present.

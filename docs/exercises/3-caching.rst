@@ -9,7 +9,7 @@ You may have noticed by now that when you send or receive messages, we report
 the number of KMS calls issued. Currently, every message you send or receive
 incurs a single KMS call. While KMS calls are inexpensive and have high default
 limits, when you write an application that performs encrypt or decrypt
-operations at extremely high volumes, you may find the overhead of performing a
+operations at extremely high volumes, you might find the overhead of performing a
 KMS call every time you encrypt and decrypt to be limiting.
 
 In this exercise we'll explore the caching feature of the AWS Encryption SDK
@@ -19,14 +19,23 @@ Before we start
 ===============
 
 We'll assume that you've completed the code changes in :ref:`Exercise 2`
-first. If you haven't, you can use this git command to
-catch up:
+first. If you haven't, you can use this git command to catch up:
 
-.. code-block:: bash
+.. tabs::
 
-    git checkout -f -B exercise-3 origin/exercise-3-start
+    .. group-tab:: Java
 
-This will give you a codebase that already has the base64 changes applied.
+        .. code-block:: bash
+
+            git checkout -f -B exercise-3 origin/exercise-3-start
+
+    .. group-tab:: Python
+
+        .. code-block:: bash
+
+            git checkout -f -B exercise-3 origin/exercise-3-start-python
+
+This will give you a codebase that already uses the AWS Encryption SDK.
 Note that any uncommitted changes you've made already will be lost.
 
 How the caching feature works
@@ -34,7 +43,7 @@ How the caching feature works
 
 You enable the caching feature of the AWS Encryption SDK by creating a
 "`caching crypto materials manager
-<http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/implement-caching.html>`_"
+<https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/implement-caching.html>`_"
 and using it instead of your master key in encrypt and decrypt operations.
 Crypto materials managers are plugins that can manipulate encrypt and decrypt
 requests in certain ways.
@@ -51,51 +60,100 @@ Step by step
 
 First, we'll add the new imports we'll need:
 
-.. code-block:: java
+.. tabs::
 
-    import java.util.concurrent.TimeUnit;
-    import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
-    import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
-    import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
+    .. group-tab:: Java
+
+        .. code-block:: java
+
+            import java.util.concurrent.TimeUnit;
+            import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+            import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
+            import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
+
+    .. group-tab:: Python
+
+        We already have all the imports we need. :)
+
 
 Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
 
-.. code-block:: java
+.. tabs::
 
-    private final CryptoMaterialsManager materialsManager;
+    .. group-tab:: Java
 
-It's important to make this a field instead of initializing it for each call,
-as we need the cache to persist from one call to the next.
+        .. code-block:: java
 
-In our constructor, we'll set up our master key, cache, and caching materials manager:
+            private final CryptoMaterialsManager materialsManager;
 
-.. code-block:: java
+        It's important to make this a field instead of initializing it for each call,
+        as we need the cache to persist from one call to the next.
 
-    KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
-        .getMasterKey(keyId);
+        In our constructor, we'll set up our master key, cache, and caching materials manager:
 
-    LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
-    materialsManager = CachingCryptoMaterialsManager.newBuilder()
-        .withMaxAge(5, TimeUnit.MINUTES)
-        .withMasterKeyProvider(masterKey)
-        .withMessageUseLimit(10)
-        .withCache(cache)
-        .build();
+        .. code-block:: java
+
+            KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
+                .getMasterKey(keyId);
+
+            LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
+            materialsManager = CachingCryptoMaterialsManager.newBuilder()
+                .withMaxAge(5, TimeUnit.MINUTES)
+                .withMasterKeyProvider(masterKey)
+                .withMessageUseLimit(10)
+                .withCache(cache)
+                .build();
+
+    .. group-tab:: Python
+
+        We'll set up the master key provider, cache, and caching materials manager in our ``__init__``:
+
+        .. code-block:: python
+
+            master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
+            self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
+                cache=cache,
+                master_key_provider=master_key_provider,
+                max_age=5.0 * 60.0,
+                max_messages_encrypted=10
+            )
 
 And finally, we'll use the materialsManager instead of our masterKey in our
 encrypt and decrypt operations:
 
-.. code-block:: java
+.. tabs::
 
-    byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
+    .. group-tab:: Java
 
-    // ...
+        .. code-block:: java
 
-    CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(materialsManager, ciphertextBytes);
+            byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
 
-Once you finish the changes, ``mvn deploy`` and try sending a few messages in a
-row. You'll see that only one message out of ten result in a KMS call, for both
-send and receive.
+            // ...
+
+            CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(materialsManager, ciphertextBytes);
+
+    .. group-tab:: Python
+
+        .. code-block:: python
+
+            ciphertext, _header = aws_encryption_sdk.encrypt(
+                source=json.dumps(data),
+                materials_manager=self.materials_manager,
+                encryption_context=encryption_context
+            )
+
+            # ...
+
+            plaintext, header = aws_encryption_sdk.decrypt(
+                source=ciphertext,
+                materials_manager=self.materials_manager
+            )
+
+Once you finish the changes, use the appropriate :ref:`Build tool commands` to
+deploy and try sending a few messages in a row. You'll see that only one message
+out of ten result in a KMS call, for both send and receive.
 
 Encryption context issues
 =========================
@@ -107,17 +165,30 @@ Try sending a few messages in a row with different order IDs. You'll note that
 the cache doesn't work in this case; this is because messages with different
 encryption contexts cannot use the same cached result.
 
-This illustrates the balance that needs to be struck between cachability and
+This illustrates the balance that needs to be struck between cacheability and
 audit log verbosity; if we put too much detail in our audit logs, then caching
 won't do us any good.
 
 To get benefit from caching here, we'll need to strike a different balance. For
 example, instead of putting the order ID in the audit log, we could put an
-_approximate_ timestamp, like so:
+*approximate* timestamp, like so:
 
-.. code-block:: java
+.. tabs::
 
-    context.put("approximate timestamp", "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
+    .. group-tab:: Java
+
+        .. code-block:: java
+
+            context.put("approximate timestamp", "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
+
+    .. group-tab:: Python
+
+        .. code-block:: python
+
+            encryption_context = {
+                self._message_type: self._type_order_inquiry,
+                self._timestamp: str(int(time.time() / 3600.0)),
+            }
 
 This puts a timestamp, rounded down to the nearest hour, in the context. This
 provides us a certain degree of information about what data is being decrypted,

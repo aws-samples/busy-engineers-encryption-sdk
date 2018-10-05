@@ -1,13 +1,4 @@
 
-.. toctree::
-    :maxdepth: 2
-    :caption: Exercises
-
-    exercises/0-explore.rst
-    exercises/1-kms_encryption.rst
-    exercises/2-encryption_sdk.rst
-    exercises/3-caching.rst
-
 .. _Main:
 
 ###########################################################
@@ -22,6 +13,14 @@ Encryption SDK to call KMS for you. You will also add data key caching to reduce
 overhead and an encryption context. The encryption context is non-secret data that you can use for
 tracking and auditing, verifying the identity of an encrypted message, and as a condition for grants
 and policies.
+
+.. toctree::
+    :maxdepth: 1
+
+    exercises/0-explore.rst
+    exercises/1-kms_encryption.rst
+    exercises/2-encryption_sdk.rst
+    exercises/3-caching.rst
 
 Getting started
 ***************
@@ -60,11 +59,11 @@ Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
 the License. A copy of the License is located at
 
-http://aws.amazon.com/apache2.0/
+https://aws.amazon.com/apache2.0/
 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
 and limitations under the License.
 
 
-.. _AWS Encryption SDK CLI: http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/crypto-cli.html
+.. _AWS Encryption SDK CLI: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/crypto-cli.html
