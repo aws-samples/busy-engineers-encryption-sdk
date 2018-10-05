@@ -1,10 +1,11 @@
 version: 0.2
 phases:
-    build:
-       commands:
-         - pip install mkdocs
-         - pip install mkdocs-material
-         - mkdocs build --clean
-    post_build:
-      commands:
-        ./deploy.sh
+  install:
+    commands:
+      - pip install tox
+  build:
+    commands:
+      - tox -e build-deploy
+  post_build:
+    commands:
+      - tox -e deploy
