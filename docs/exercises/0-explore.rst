@@ -200,7 +200,7 @@ Prerequisites installation
 
         .. code-block:: bash
 
-            pip3 install --user --upgrade tox
+            python3 -m pip install --user --upgrade tox
 
 At this point you should have a Linux system that can deploy the example application with the instructions below.
 
@@ -212,6 +212,9 @@ such as ``vim`` or ``emacs``.
 
 Build tool commands
 ===================
+
+These commands will be used throughout these exercises to build, deploy, update, and destroy
+the example application.
 
 .. tabs::
 
@@ -324,8 +327,8 @@ To go to the sample application, open the URL in the output.
 Updating the application
 ------------------------
 
-Whenever you change the application, you can use ``mvn deploy`` to deploy the updates. The
-deployment scripts will handle changes to the Java code, HTML, and CloudFormation templates
+Whenever you change the application, you can use the appropriate :ref:`Build tool commands` to deploy
+the updates. The deployment scripts will handle changes to the Java code, HTML, and CloudFormation templates
 automatically.
 
 Cleaning up
@@ -378,9 +381,20 @@ Change the Demo Application
 To make sure you are set up correctly, try making some simple changes to the application and
 deploying them.
 
-We've created an ``EncryptDecrypt`` placeholder class for your encryption and data encoding logic.
-You'll see the class under the ``webapp/src/main/java/example/encryption/EncryptDecrypt.java``
-that converts between plaintext and ciphertext.
+.. tabs::
+
+    .. group-tab:: Java
+
+        We've created an ``EncryptDecrypt`` placeholder class for your encryption and data encoding logic.
+        You'll see the class under ``webapp/src/main/java/example/encryption/EncryptDecrypt.java``.
+        It converts between plaintext and ciphertext.
+
+    .. group-tab:: Python
+
+        We've created an ``EncryptDecrypt`` placeholder class for your encryption and data encoding logic.
+        You'll see the class under ``src/reinvent_sid345/encrypt_decrypt.py``.
+        It converts between plaintext and ciphertext.
+
 
 Before we enable encryption, we're simply sending the JSON to SQS as a raw string. When we
 start encrypting, the encryption process will generate random-looking
