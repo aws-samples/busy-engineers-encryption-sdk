@@ -28,11 +28,12 @@ first. If you haven't, you can use this git command to catch up:
 
             git checkout -f -B exercise-2 origin/exercise-2-start-python
 
-This will give you a codebase that already has the base64 changes applied.
+This will give you a codebase that includes the base64 changes and direct
+KMS encryption from Exercises 0 and 1.
 Note that any uncommitted changes you've made already will be lost.
 
 
-Exploring the limitations of direct KMS
+Exploring the guardrails of direct KMS
 =======================================
 
 Directly using KMS means that your messages will be limited in size to 4096
