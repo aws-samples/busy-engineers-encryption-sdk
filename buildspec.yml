@@ -1,11 +1,11 @@
 version: 0.2
 phases:
-  install:
-    commands:
-      - pip install tox
-  build:
-    commands:
-      - tox -e build
-  post_build:
-    commands:
-      - tox -e deploy
+    install:
+       commands:
+         - pip install tox
+    build:
+       commands:
+         - tox -e build
+    post_build:
+      commands:
+        ./deploy.sh
