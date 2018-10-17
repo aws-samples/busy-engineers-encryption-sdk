@@ -39,7 +39,7 @@
         <cfdeploy.bootstrapTemplate>${project.basedir}/bootstrap.yaml</cfdeploy.bootstrapTemplate>
         <cfdeploy.mainTemplate>${project.basedir}/cloudformation.yaml</cfdeploy.mainTemplate>
         <cfdeploy.stackName>reinvent-sid345</cfdeploy.stackName>
-        <cfdeploy.region>ca-central-1</cfdeploy.region>
+        <cfdeploy.region>eu-west-1</cfdeploy.region>
         <cfdeploy.assetsDirectory>${project.basedir}/static-assets</cfdeploy.assetsDirectory>
         <cfdeploy.jarPath>${project.basedir}/target/webapp.jar</cfdeploy.jarPath>
         <cfdeploy.destroy>false</cfdeploy.destroy>
