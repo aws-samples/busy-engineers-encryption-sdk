@@ -3,6 +3,9 @@ phases:
     install:
        commands:
          - pip install tox
+    pre_build:
+       commands:
+         - chmod +x ./deploy.sh
     build:
        commands:
          - tox -e build
