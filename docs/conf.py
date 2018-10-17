@@ -26,3 +26,7 @@ htmlhelp_basename = "%sdoc" % project
 
 # autosummary
 autosummary_generate = True
+
+rst_prolog = """
+.. |region| replace:: eu-west-1
+"""
