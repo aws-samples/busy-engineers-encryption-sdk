@@ -8,118 +8,128 @@ Exercise 0: Explore
 We've prepared a simple example application. We'll use this application to explore different ways
 to encrypt data. Before we dive in, you will need to set up your environment.
 
-.. note::
+Environment setup
+=================
 
-    Note for workshop attendees
-
-    If you are working through these examples in a Cloud9 workshop setting, your environment is already configured.
-
-You may skip the setup portions and proceed directly to :ref:`Deploying the example application`.
-
-Prerequisites
-=============
-
-Install and set up the required components:
+Environment creation
+--------------------
 
 .. tabs::
 
-    .. group-tab:: Java
+    .. group-tab:: Cloud9
+
+        We have created CloudFormation templates that will set up a Cloud9 workspace that has the necessary prerequisites installed
+        and uses a role with the necessary permissions.
+
+        **Initial Stack**
+
+        If you are using a qwiklabs account then the initial CloudFormation stack has already been created.
+        You can continue to **Cloud9 Stack**.
+
+        If you are manually setting up an account, you need to launch the initial CloudFormation stack.
+
+        .. image:: ../images/cloudformation-launch-stack.png
+            :target: https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=MySid345BaseEnv&templateURL=https://s3.amazonaws.com/sid345.reinvent-workshop.com/cloudformation/reinvent-sid345.yaml
+
+        **Cloud9 Stack**
+
+        Once the initial CloudFormation stack deployment is complete, you need to launch the Cloud9 CloudFormation stack.
+
+        .. image:: ../images/cloudformation-launch-stack.png
+            :target: https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=MySid345Cloud9Env&templateURL=https://s3.amazonaws.com/sid345.reinvent-workshop.com/cloudformation/reinvent-sid345-cloud9.yaml
+
+    .. group-tab:: Manual
+
+        **Prerequisites**
+
+        Install and set up the required components:
 
         * An AWS account
         * `The AWS CLI`_
-        * `JDK 1.8`_
-        * `Maven 3`_
         * `Git`_
+        * `JDK 1.8`_ (Java only)
+        * `Maven 3`_ (Java only)
+        * Python 3.6 (we specifically need 3.6 to build binaries for Lambda) (Python only)
+        * tox (Python only)
 
-    .. group-tab:: Python
+        The :ref:`EC2 quickstart` section will walk you through setting these up.
 
-        * An AWS account
-        * `The AWS CLI`_
-        * Python 3.6 (we specifically need 3.6 to build binaries for Lambda)
-        * tox
-        * `Git`_
+        **AWS credentials**
 
-The :ref:`EC2 quickstart` section will walk you through setting these up.
+        You'll need to configure your default AWS credentials to have *Administrator* access.
 
-AWS credentials
----------------
+        We'll be deploying a Lambda application, so we'll need to create an IAM role for it to use when talking to AWS
+        services, and this requires Administrator access - Power User is not sufficient.
 
-You'll need to configure your default AWS credentials to have *Administrator* access.
+        The roles created are restricted to only having access to the specific resources created as part
+        of this demo.
 
-We'll be deploying a Lambda application, so we'll need to create an IAM role for it to use when talking to AWS
-services, and this requires Administrator access - Power User is not sufficient.
+        For help setting credentials with the CLI, see the `AWS CLI documentation`_.
 
-The roles created are restricted to only having access to the specific resources created as part
-of this demo.
+        .. _EC2 quickstart:
 
-For help setting credentials with the CLI, see the `AWS CLI documentation`_.
+        **EC2 quickstart**
 
-.. _EC2 quickstart:
+        If you'd like to set up an EC2 instance that is set up to use as a development
+        environment for this demo, here's some quickstart instructions to get you set
+        up.
 
-EC2 quickstart
-==============
+        If you've already got a working development environment, feel free to skip
+        ahead to the next section where we'll deploy the sample application.
 
-If you'd like to set up an EC2 instance that is set up to use as a development
-environment for this demo, here's some quickstart instructions to get you set
-up.
+        **Configuring and launching the instance**
 
-If you've already got a working development environment, feel free to skip
-ahead to the next section where we'll deploy the sample application.
+        First, create an Administrator access role that the EC2 instance will use to
+        access your account.
 
-Configuring and launching the instance
---------------------------------------
+        .. warning::
 
-First, create an Administrator access role that the EC2 instance will use to
-access your account.
+            Because this is granting a high level of privileges to the instance,
+            we recommend doing this in a test account.
 
-.. warning::
+        #. Log in to the AWS Console.
+        #. Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=ca-central-1#/roles>`_.
+        #. Click the "Create Role" button.
+        #. Under "Choose the service that will use this role", select "EC2",
+           then select "EC2" for the use case and proceed to the next page.
+        #. Select ``AdministratorAccess``, and proceed to the next page.
+        #. Set some easy-to-remember name for the role such as "sid345-admin".
 
-    Because this is granting a high level of privileges to the instance,
-    we recommend doing this in a test account.
+        Now that you have a role created, we'll deploy a Linux instance to use as our
+        launching point.
 
-#. Log in to the AWS Console.
-#. Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=ca-central-1#/roles>`_.
-#. Click the "Create Role" button.
-#. Under "Choose the service that will use this role", select "EC2",
-   then select "EC2" for the use case and proceed to the next page.
-#. Select ``AdministratorAccess``, and proceed to the next page.
-#. Set some easy-to-remember name for the role such as "sid345-admin".
+        Open `the EC2 console for ca-central-1
+        <https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances:sort=instanceId>`_.
 
-Now that you have a role created, we'll deploy a Linux instance to use as our
-launching point.
+        If you have not launched any instances here before, you'll first need to either
+        `create a new key pair
+        <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair>`_
+        or `import an existing ssh key
+        <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#how-to-generate-your-own-key-and-import-it-to-aws>`_
+        using the instructions at those links.
 
-Open `the EC2 console for ca-central-1
-<https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances:sort=instanceId>`_.
+        Once you have the key pair set up, we can launch an instance.
 
-If you have not launched any instances here before, you'll first need to either
-`create a new key pair
-<https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair>`_
-or `import an existing ssh key
-<https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#how-to-generate-your-own-key-and-import-it-to-aws>`_
-using the instructions at those links.
+        #. Click the blue 'Launch Instance' button.
+        #. Select the 'Amazon Linux AMI 2018.03.0 (HVM), SSD Volume Type' AMI.
+        #. Click 'Configure Instance Details' and make sure 'Auto-assign Public IP' is **Enabled**.
+        #. **In 'IAM Role', select the role you created above.** ("sid345-admin", or your preferred name)
+        #. Click 'Review and Launch'.
+        #. Click 'Launch'.
+        #. In the provided dialog, select the keypair you just created or imported.
+        #. Click 'Launch Instances'.
 
-Once you have the key pair set up, we can launch an instance.
+        Once the instance launches, you'll see it in the `instance list
+        <https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances>`_.
 
-#. Click the blue 'Launch Instance' button.
-#. Select the 'Amazon Linux AMI 2018.03.0 (HVM), SSD Volume Type' AMI.
-#. Click 'Configure Instance Details' and make sure 'Auto-assign Public IP' is **Enabled**.
-#. **In 'IAM Role', select the role you created above.** ("sid345-admin", or your preferred name)
-#. Click 'Review and Launch'.
-#. Click 'Launch'.
-#. In the provided dialog, select the keypair you just created or imported.
-#. Click 'Launch Instances'.
+        Copy the public DNS hostname. You can then log into this instance using
+        username ``ec2-user`` and the keypair you created before.
 
-Setting up the development environment
---------------------------------------
+        If this is your first time using EC2, see the `EC2 getting started documentation
+        <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html>`_ for more detail.
 
-Once the instance launches, you'll see it in the `instance list
-<https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances>`_.
-
-Copy the public DNS hostname. You can then log into this instance using
-username ``ec2-user`` and the keypair you created before.
-
-If this is your first time using EC2, see the `EC2 getting started documentation
-<https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html>`_ for more detail.
+Prerequisites installation
+--------------------------
 
 .. tabs::
 
