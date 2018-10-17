@@ -5,7 +5,7 @@ phases:
       - pip install tox
   build:
     commands:
-      - tox -e build-deploy
+      - tox -e build
   post_build:
     commands:
       - tox -e deploy
