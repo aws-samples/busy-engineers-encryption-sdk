@@ -33,7 +33,7 @@ first. If you haven't, you can use this git command to catch up:
 This will give you a codebase that already has the base64 changes applied.
 Note that any uncommitted changes you've made already will be lost.
 
-If you haven't done exercise 0 at all, we encourage you to go through the
+If you haven't done Exercise 0 at all, we encourage you to go through the
 preparation and deployment steps in there at a minimum.
 
 Using KMS directly
@@ -43,7 +43,7 @@ In this exercise we'll use direct KMS
 `Encrypt <https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html>`_
 and `Decrypt <https://docs.aws.amazon.com/kms/latest/APIReference/API_Decrypt.html>`_
 calls to encrypt and decrypt data. We'll also set an appropriate encryption context,
-and observe some of the subtle pitfalls in using KMS directly.
+and observe some of the subtle constraints when using KMS directly.
 
 The KMS SDK API
 ---------------
@@ -284,7 +284,7 @@ actual encrypt call:
 The same code also needs to be placed right before the decrypt call as well.
 
 Once you've deployed this code and sent and received data with it, about 10
-minutes later the cloudtrail logs should show entries with the new encryption
+minutes later the CloudTrail logs should show entries with the new encryption
 context fields.
 
 Extra credit
@@ -296,5 +296,5 @@ time - so you'll need to find a way to encode it into the message outside of
 the ciphertext.
 
 If you encode the order ID into the context, you'll see it flowing through to
-your cloudtrail logs as well - so you'll know which inquires are being
+your CloudTrail logs as well - so you'll know which inquires are being
 decrypted.
