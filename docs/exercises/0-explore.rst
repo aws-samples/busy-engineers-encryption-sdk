@@ -23,20 +23,22 @@ Environment creation
 
         **Initial Stack**
 
-        If you are using a qwiklabs account then the initial CloudFormation stack has already been created.
+        If you are using a Qwiklabs account then the initial CloudFormation stack has already been created.
         You can continue to **Cloud9 Stack**.
 
-        If you are manually setting up an account, you need to launch the initial CloudFormation stack.
+        If you are manually setting up an account, you need to sign into the Console and launch the initial CloudFormation stack.
 
         .. image:: ../images/cloudformation-launch-stack.png
-            :target: https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=MySid345BaseEnv&templateURL=https://s3.amazonaws.com/sid345.reinvent-workshop.com/cloudformation/reinvent-sid345.yaml
+            :target: https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=MySid345BaseEnv&templateURL=https://s3.amazonaws.com/sid345.reinvent-workshop.com/cloudformation/reinvent-sid345.yaml
 
         **Cloud9 Stack**
 
         Once the initial CloudFormation stack deployment is complete, you need to launch the Cloud9 CloudFormation stack.
 
         .. image:: ../images/cloudformation-launch-stack.png
-            :target: https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=MySid345Cloud9Env&templateURL=https://s3.amazonaws.com/sid345.reinvent-workshop.com/cloudformation/reinvent-sid345-cloud9.yaml
+            :target: https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=MySid345Cloud9Env&templateURL=https://s3.amazonaws.com/sid345.reinvent-workshop.com/cloudformation/reinvent-sid345-cloud9.yaml
+
+
 
     .. group-tab:: Manual
 
@@ -88,7 +90,7 @@ Environment creation
             we recommend doing this in a test account.
 
         #. Log in to the AWS Console.
-        #. Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=ca-central-1#/roles>`_.
+        #. Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=eu-west-1#/roles>`_.
         #. Click the "Create Role" button.
         #. Under "Choose the service that will use this role", select "EC2",
            then select "EC2" for the use case and proceed to the next page.
@@ -99,7 +101,7 @@ Environment creation
         launching point.
 
         Open `the EC2 console for ca-central-1
-        <https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances:sort=instanceId>`_.
+        <https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Instances:sort=instanceId>`_.
 
         If you have not launched any instances here before, you'll first need to either
         `create a new key pair
@@ -120,7 +122,7 @@ Environment creation
         #. Click 'Launch Instances'.
 
         Once the instance launches, you'll see it in the `instance list
-        <https://ca-central-1.console.aws.amazon.com/ec2/v2/home?region=ca-central-1#Instances>`_.
+        <https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Instances>`_.
 
         Copy the public DNS hostname. You can then log into this instance using
         username ``ec2-user`` and the keypair you created before.
@@ -308,13 +310,13 @@ When the deployment completes, you'll see output like this.
         .. code-block:: bash
 
             [INFO] Deployment successful.
-            [INFO] Deployment URL: https://EXAMPLE.execute-api.ca-central-1.amazonaws.com/test/
+            [INFO] Deployment URL: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            Endpoint available at: https://EXAMPLE.execute-api.ca-central-1.amazonaws.com/test/
+            Endpoint available at: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
 
 To go to the sample application, open the URL in the output.
 
@@ -339,7 +341,7 @@ up its AWS resources using the appropriate :ref:`Build tool commands`.
 
 This destroys all AWS resources related to the demo application except for the
 CloudWatch Log groups that AWS Lambda generated. You can delete those log groups from
-`the CloudWatch console <https://ca-central-1.console.aws.amazon.com/cloudwatch/home?region=ca-central-1#logs:>`_.
+`the CloudWatch console <https://eu-west-1.console.aws.amazon.com/cloudwatch/home?region=eu-west-1#logs:>`_.
 
 Exploring the example application
 =================================
@@ -375,7 +377,7 @@ an SQS queue. Initially, these messages are unencrypted.
   seeing events after we add encryption. Keep in mind that CloudTrail data is delayed by about 10
   minutes.
 
-Change the Demo Application
+Change the Example Application
 ===========================
 
 To make sure you are set up correctly, try making some simple changes to the application and
