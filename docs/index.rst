@@ -16,6 +16,7 @@ verifying the identity of an encrypted message, and as a condition for grants an
 .. toctree::
     :maxdepth: 1
 
+    environment-setup.rst
     exercises/0-explore.rst
     exercises/1-kms_encryption.rst
     exercises/2-encryption_sdk.rst
@@ -25,7 +26,7 @@ Getting started
 ***************
 
 Instructions on how to set up (and to shut down) the example application can be
-found in :ref:`Exercise 0`.
+found in :ref:`Environment Setup`.
 
 List of exercises
 *****************
