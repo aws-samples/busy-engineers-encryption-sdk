@@ -40,4 +40,4 @@ cp build-tools/python-build.sh ${DIR}/
 cp dist/* ${DIR}/
 chmod 755 ${DIR}/python-build.sh
 cd ${DIR}
-python-build.sh
+./python-build.sh
