@@ -112,7 +112,7 @@ putting it together on your own, you can refer to the `KMS SDK API documentation
 <https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html>`_
 (`Java <https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/kms/AWSKMSClient.html>`_)
 (`Python <https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.encrypt>`_)
-and skip to 'Adding encryption context' once you have it working; otherwise
+and skip to :ref:`Using the encryption context` once you have it working; otherwise
 we'll have specific directions below.
 
 Step by step
@@ -214,6 +214,8 @@ it in a field for later reference.
 
 Note that we don't need to provide the key ID to decrypt; decrypt will automatically
 determine which key to use based on the ciphertext.
+
+.. _Using the encryption context:
 
 Using the encryption context
 ============================

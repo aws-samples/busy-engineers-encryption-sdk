@@ -192,7 +192,8 @@ Prerequisites Installation
             PATH=$PWD/apache-maven-3.5.2/bin:$PATH
             echo "PATH=$PWD/apache-maven-3.5.2/bin:$PATH" >> ~/.bash_profile
 
-        At this point you should have a Linux system that can deploy the example application with the instructions below.
+        At this point you should have a Linux system that can deploy the example application with the instructions in
+        :ref:`Exercise 0`.
 
         To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
         such as ``vim`` or ``emacs``.
@@ -211,7 +212,8 @@ Prerequisites Installation
 
             python3 -m pip install --user --upgrade tox
 
-        At this point you should have a Linux system that can deploy the example application with the instructions below.
+        At this point you should have a Linux system that can deploy the example application with the instructions in
+        :ref:`Exercise 0`.
 
         To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
         such as ``vim`` or ``emacs``.

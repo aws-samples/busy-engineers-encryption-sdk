@@ -47,6 +47,63 @@ Check out the first application branch for the language of your choice:
 
 And deploy using the appropriate :ref:`Build tool commands`.
 
+.. _Build tool commands:
+
+Build tool commands
+===================
+
+These commands will be used throughout these exercises to build, deploy, update, and destroy
+the example application.
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        **Deploy/Update**
+
+        To build locally and deploy:
+
+        .. code-block:: bash
+
+            mvn deploy
+
+        **Destroy**
+
+        Later, when you are finished with the workshop, this will destroy the stack and clean up:
+
+        .. code-block:: bash
+
+            mvn deploy -Pdestroy
+
+    .. group-tab:: Python
+
+        **Deploy/Update**
+
+        To build locally and deploy:
+
+        .. code-block:: bash
+
+            tox -e deploy
+
+        The actual build needs to happen on an Amazon Linux platform with Python 3.6.
+        Everything else can be done on any host with ``tox``, ``bash``, and ``ssh``.
+
+        **Destroy**
+
+        Later, when you are finished with the workshop, this will destroy the stack and clean up:
+
+        .. code-block:: bash
+
+            tox -e destroy
+
+    .. tab:: Python (Bonus)
+
+        If you want to run the build on another computer, you can use this build command:
+
+        .. code-block:: bash
+
+            tox -e deploy-remote-build -- {HOSTNAME} {SSH KEY FILE}
+
 Our build tools automatically build the Lambda, use AWS CloudFormation to deploy AWS resources, and
 uploads the built application as a Lambda function. The initial deployment typically takes 3-5
 minutes to complete. You can monitor the progress of the deployment on the `CloudFormation console
@@ -95,64 +152,6 @@ up its AWS resources using the appropriate :ref:`Build tool commands`.
 This destroys all AWS resources related to the demo application except for the
 CloudWatch Log groups that AWS Lambda generated. You can delete those log groups from
 `the CloudWatch console <https://eu-west-1.console.aws.amazon.com/cloudwatch/home?region=eu-west-1#logs:>`_.
-
-.. _Build tool commands:
-
-Build tool commands
-===================
-
-These commands will be used throughout these exercises to build, deploy, update, and destroy
-the example application.
-
-.. tabs::
-
-    .. group-tab:: Java
-
-        **Deploy/Update**
-
-        To build locally and deploy:
-
-        .. code-block:: bash
-
-            mvn deploy
-
-        **Destroy**
-
-        To destroy the stack and clean up:
-
-        .. code-block:: bash
-
-            mvn deploy -Pdestroy
-
-    .. group-tab:: Python
-
-        **Deploy/Update**
-
-        To build locally and deploy:
-
-        .. code-block:: bash
-
-            tox -e deploy
-
-        The actual build needs to happen on an Amazon Linux platform with Python 3.6.
-        Everything else can be done on any host with ``tox``, ``bash``, and ``ssh``.
-
-        **Destroy**
-
-        To destroy the stack and clean up:
-
-        .. code-block:: bash
-
-            tox -e destroy
-
-    .. tab:: Python (Bonus)
-
-        If you want to run the build on another computer, you can use this build command:
-
-        .. code-block:: bash
-
-            tox -e deploy-remote-build -- {HOSTNAME} {SSH KEY FILE}
-
 
 .. _Exploring the example application:
 
@@ -282,7 +281,7 @@ Detailed steps
 
 After you've made the changes, use the appropriate :ref:`Build tool commands` to deploy them. Then try sending
 and receiving a sample message. Now, when you use the **Ciphertext** radio button on the **Receive data** tab, you
-should see Base64-encoded ciphertext of the message.
+should see the Base64-encoded message.
 
 .. _The AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html
 .. _JDK 1.8: https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
