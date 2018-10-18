@@ -100,7 +100,7 @@ Environment creation
         Now that you have a role created, we'll deploy a Linux instance to use as our
         launching point.
 
-        Open `the EC2 console for ca-central-1
+        Open `the EC2 console for eu-west-1
         <https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Instances:sort=instanceId>`_.
 
         If you have not launched any instances here before, you'll first need to either
@@ -130,12 +130,17 @@ Environment creation
         If this is your first time using EC2, see the `EC2 getting started documentation
         <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html>`_ for more detail.
 
+
 Prerequisites installation
 --------------------------
 
 .. tabs::
 
-    .. group-tab:: Java
+    .. group-tab:: Cloud9
+
+        Your environment should already have your language prerequisites configured.
+
+    .. group-tab:: Manual (Java)
 
         Once you're logged in, use ``yum`` to upgrade Java and install git:
 
@@ -190,7 +195,12 @@ Prerequisites installation
             PATH=$PWD/apache-maven-3.5.2/bin:$PATH
             echo "PATH=$PWD/apache-maven-3.5.2/bin:$PATH" >> ~/.bash_profile
 
-    .. group-tab:: Python
+        At this point you should have a Linux system that can deploy the example application with the instructions below.
+
+        To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
+        such as ``vim`` or ``emacs``.
+
+    .. group-tab:: Manual (Python)
 
         One you're logged in, use ``yum`` to install Python 3.6 and git:
 
@@ -204,11 +214,99 @@ Prerequisites installation
 
             python3 -m pip install --user --upgrade tox
 
-At this point you should have a Linux system that can deploy the example application with the instructions below.
+        At this point you should have a Linux system that can deploy the example application with the instructions below.
 
-To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
-such as ``vim`` or ``emacs``.
+        To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
+        such as ``vim`` or ``emacs``.
 
+
+.. _Deploying the example application:
+
+Deploying the example application
+=================================
+
+.. tabs::
+
+   .. group-tab:: Cloud9
+
+        Your environment should already have the repository checked out. You will still need to switch branches to the
+        language of your choice.
+
+   .. group-tab:: Manual
+
+        First, check out the application on your local computer:
+
+        .. code-block:: bash
+
+            git clone https://github.com/aws-samples/reinvent-sid345-workshop-sample.git
+            cd reinvent-sid345-workshop-sample
+
+Check out the first application branch for the language of your choice:
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        .. code-block:: bash
+
+            git checkout exercise-0-start
+
+    .. group-tab:: Python
+
+        .. code-block:: bash
+
+            git checkout exercise-0-start-python
+
+And deploy using the appropriate :ref:`Build tool commands`.
+
+Our build tools automatically build the Lambda, use AWS CloudFormation to deploy AWS resources, and
+uploads the built application as a Lambda function. The initial deployment typically takes 3-5
+minutes to complete. You can monitor the progress of the deployment on the `CloudFormation console
+<https://eu-west-1.console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks?filter=active>`_.
+
+When the deployment completes, you'll see output like this.
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        .. code-block:: bash
+
+            [INFO] Deployment successful.
+            [INFO] Deployment URL: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
+
+    .. group-tab:: Python
+
+        .. code-block:: bash
+
+            Endpoint available at: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
+
+To go to the sample application, open the URL in the output.
+
+.. warning::
+
+    This simple demo application does not authenticate its users. Anyone who accesses the application
+    endpoint can see your data in plaintext on the **Receive data** tab. Do not enter real data in this
+    application.
+
+.. _Updating the example application:
+
+Updating the example application
+=================================
+
+Whenever you change the application, you can use the appropriate :ref:`Build tool commands` to deploy
+the updates. The deployment scripts will handle changes to the Java code, HTML, and CloudFormation templates
+automatically.
+
+Cleaning up
+-----------
+
+When you're done with the workshop, you can shut down the application and clean
+up its AWS resources using the appropriate :ref:`Build tool commands`.
+
+This destroys all AWS resources related to the demo application except for the
+CloudWatch Log groups that AWS Lambda generated. You can delete those log groups from
+`the CloudWatch console <https://eu-west-1.console.aws.amazon.com/cloudwatch/home?region=eu-west-1#logs:>`_.
 
 .. _Build tool commands:
 
@@ -251,12 +349,6 @@ the example application.
         The actual build needs to happen on an Amazon Linux platform with Python 3.6.
         Everything else can be done on any host with ``tox``, ``bash``, and ``ssh``.
 
-        If you want to run the build on another computer, you can use this build command:
-
-        .. code-block:: bash
-
-            tox -e deploy-remote-build -- {HOSTNAME} {SSH KEY FILE}
-
         **Destroy**
 
         To destroy the stack and clean up:
@@ -265,83 +357,16 @@ the example application.
 
             tox -e destroy
 
+    .. tab:: Python (Bonus)
 
-.. _Deploying the example application:
-
-Deploying the example application
-=================================
-
-First, check out the application on your local computer:
-
-.. code-block:: bash
-
-    git clone https://github.com/aws-samples/reinvent-sid345-workshop-sample.git
-    cd reinvent-sid345-workshop-sample
-
-Check out the first application branch:
-
-.. tabs::
-
-    .. group-tab:: Java
+        If you want to run the build on another computer, you can use this build command:
 
         .. code-block:: bash
 
-            git checkout exercise-0-start
+            tox -e deploy-remote-build -- {HOSTNAME} {SSH KEY FILE}
 
-    .. group-tab:: Python
 
-        .. code-block:: bash
-
-            git checkout exercise-0-start-python
-
-And deploy using the appropriate :ref:`Build tool commands`.
-
-Our build tools automatically build the Lambda, use AWS CloudFormation to deploy AWS resources, and
-uploads the built application as a Lambda function. The initial deployment typically takes 3-5
-minutes to complete. You can monitor the progress of the deployment on the `CloudFormation console
-<https://ca-central-1.console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks?filter=active>`_.
-
-When the deployment completes, you'll see output like this.
-
-.. tabs::
-
-    .. group-tab:: Java
-
-        .. code-block:: bash
-
-            [INFO] Deployment successful.
-            [INFO] Deployment URL: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
-
-    .. group-tab:: Python
-
-        .. code-block:: bash
-
-            Endpoint available at: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
-
-To go to the sample application, open the URL in the output.
-
-.. warning::
-
-    This simple demo application does not authenticate its users. Anyone who accesses the application
-    endpoint can see your data in plaintext on the **Receive data** tab. Do not enter real data in this
-    application.
-
-Updating the application
-------------------------
-
-Whenever you change the application, you can use the appropriate :ref:`Build tool commands` to deploy
-the updates. The deployment scripts will handle changes to the Java code, HTML, and CloudFormation templates
-automatically.
-
-Cleaning up
------------
-
-When you're done with the workshop, you can shut down the application and clean
-up its AWS resources using the appropriate :ref:`Build tool commands`.
-
-This destroys all AWS resources related to the demo application except for the
-CloudWatch Log groups that AWS Lambda generated. You can delete those log groups from
-`the CloudWatch console <https://eu-west-1.console.aws.amazon.com/cloudwatch/home?region=eu-west-1#logs:>`_.
+.. _Exploring the example application:
 
 Exploring the example application
 =================================
