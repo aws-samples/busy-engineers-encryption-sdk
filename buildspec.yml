@@ -11,4 +11,4 @@ phases:
          - tox -e build
     post_build:
       commands:
-         - tox -e deploy
+         ./deploy.sh
