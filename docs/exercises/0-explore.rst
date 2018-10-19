@@ -255,6 +255,10 @@ Detailed steps
 
         We'll use the builtin ``base64`` module.
 
+        .. code-block:: python
+
+            import base64
+
         First, in ``encrypt``, change the code to encode the JSON string as bytes.
 
         .. code-block:: python

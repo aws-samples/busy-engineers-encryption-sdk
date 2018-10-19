@@ -189,6 +189,12 @@ it in a field for later reference.
 
     .. group-tab:: Python
 
+        First we need to import the ``boto3`` library.
+
+        .. code-block:: python
+
+            import boto3
+
         We'll need to add handlers to our ``__init__`` to collect the key ID and create the KMS client.
 
         .. code-block:: python
@@ -208,6 +214,7 @@ it in a field for later reference.
 
         .. code-block:: python
 
+            ciphertext = base64.b64decode(data)
             response = self.kms.decrypt(CiphertextBlob=ciphertext)
             plaintext = response["Plaintext"]
 
@@ -274,12 +281,24 @@ actual encrypt call:
 
     .. group-tab:: Python
 
+        We need to set the encryption context on encrypt.
+
         .. code-block:: python
 
             encryption_context = {self._message_type: self._type_order_inquiry}
             response = self.kms.encrypt(
                 KeyId=self.key_id,
                 Plaintext=plaintext,
+                EncryptionContext=encryption_context
+            )
+
+        And also on decrypt.
+
+        .. code-block:: python
+
+            encryption_context = {self._message_type: self._type_order_inquiry}
+            response = self.kms.decrypt(
+                CiphertextBlob=ciphertext,
                 EncryptionContext=encryption_context
             )
 
