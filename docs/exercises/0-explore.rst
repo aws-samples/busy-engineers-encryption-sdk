@@ -8,26 +8,7 @@ Exercise 0: Explore
 We've prepared a simple example application. We'll use this application to explore different ways
 to encrypt data. Before we dive in, you will need to set up your environment.
 
-.. _Deploying the example application:
 
-Deploying the example application
-=================================
-
-.. tabs::
-
-   .. group-tab:: Cloud9
-
-        Your environment should already have the repository checked out. You will still need to switch branches to the
-        language of your choice.
-
-   .. group-tab:: Manual
-
-        First, check out the application on your local computer:
-
-        .. code-block:: bash
-
-            git clone https://github.com/aws-samples/reinvent-sid345-workshop-sample.git
-            cd reinvent-sid345-workshop-sample
 
 Check out the first application branch for the language of your choice:
 

@@ -133,9 +133,36 @@ Prerequisites Installation
 
 .. tabs::
 
-    .. group-tab:: Cloud9
+    .. group-tab:: Cloud9 (Java)
 
-        Your environment should already have your language prerequisites configured.
+        Once you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
+
+        .. code-block:: bash
+
+            cd reinvent-sid345-workshop-sample
+            git checkout utilities
+            ./prep-java.sh
+
+        .. attention::
+
+            Cloud9 should automatically check out the git repository when you activate the IDE. Sometimes this script
+            does not run. If you do not have a copy of ``reinvent-sid345-workshop-sample``, close your IDE tab and reopen it.
+
+    .. group-tab:: Cloud9 (Python)
+
+        Once you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
+
+        .. code-block:: bash
+
+            cd reinvent-sid345-workshop-sample
+            git checkout utilities
+            ./prep-python.sh
+            . ~/.bashrc
+
+        .. attention::
+
+            Cloud9 should automatically check out the git repository when you activate the IDE. Sometimes this script
+            does not run. If you do not have a copy of ``reinvent-sid345-workshop-sample``, close your IDE tab and reopen it.
 
     .. group-tab:: Manual (Java)
 
@@ -192,8 +219,12 @@ Prerequisites Installation
             PATH=$PWD/apache-maven-3.5.2/bin:$PATH
             echo "PATH=$PWD/apache-maven-3.5.2/bin:$PATH" >> ~/.bash_profile
 
-        At this point you should have a Linux system that can deploy the example application with the instructions in
-        :ref:`Exercise 0`.
+        Now, check out the application on your local computer:
+
+        .. code-block:: bash
+
+            git clone https://github.com/aws-samples/reinvent-sid345-workshop-sample.git
+            cd reinvent-sid345-workshop-sample
 
         To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
         such as ``vim`` or ``emacs``.
@@ -212,11 +243,18 @@ Prerequisites Installation
 
             python3 -m pip install --user --upgrade tox
 
-        At this point you should have a Linux system that can deploy the example application with the instructions in
-        :ref:`Exercise 0`.
+        Now, check out the application on your local computer:
+
+        .. code-block:: bash
+
+            git clone https://github.com/aws-samples/reinvent-sid345-workshop-sample.git
+            cd reinvent-sid345-workshop-sample
 
         To edit files, the ``nano`` editor is built-in. You can also install or use another editor of your choice,
         such as ``vim`` or ``emacs``.
+
+At this point you should have a Linux system that can deploy the example application with the instructions in
+:ref:`Exercise 0`.
 
 .. _AWS CLI documentation: https://docs.aws.amazon.com/cli/index.html
 .. _The AWS CLI: https://docs.aws.amazon.com/cli/index.html
