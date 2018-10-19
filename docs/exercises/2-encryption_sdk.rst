@@ -280,6 +280,14 @@ encryption context mostly the same, and the body of encrypt can just be:
 
     .. group-tab:: Python
 
+        First we need to import the encryption sdk.
+
+        .. code-block:: python
+
+            import aws_encryption_sdk
+
+        Now we update the ``encrypt()`` function to use the encryption sdk.
+
         .. code-block:: python
 
             def encrypt(self, data):
