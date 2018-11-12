@@ -48,8 +48,10 @@ and observe some of the subtle constraints when using KMS directly.
 The KMS SDK API
 ---------------
 
-The project is already configured to import the KMS SDK. To construct a
-client we can just create an instance of it:
+The project is already configured to import the KMS SDK.
+
+Client construction is simple. Since we're running in AWS Lambda, the region and credentials are automatically
+configured for us.
 
 .. tabs::
 
@@ -65,20 +67,22 @@ client we can just create an instance of it:
 
             kms = boto3.client('kms')
 
-Since we're running in AWS Lambda, the region and credentials are automatically
-configured for us.
 
 .. tabs::
 
     .. group-tab:: Java
 
-        Actually making requests is a bit more involved. We need to construct
-        ``EncryptRequest`` or ``DecryptRequest`` objects with the data to encrypt or
-        decrypt. One major pitfall with these is that they use ``java.nio.ByteBuffer`` to
-        transfer binary data. The APIs we looked at in the previous example used byte
-        arrays (``byte[]``) instead, so we'll need to see how to convert between the two.
+        Making KMS requests requires using ``EncryptRequest`` or ``DecryptRequest``
+        objects with the data to encrypt or decrypt.
 
-        Converting from ``byte[]`` to ``ByteBuffer`` is easy:
+        These request objects use ``java.nio.ByteBuffer`` to transfer binary data.
+        The APIs we looked at in the previous example used byte arrays (``byte[]``) instead,
+        so we'll need to see how to convert between the two.
+
+        Don't worry about changing anything yet, we'll walk through the necessary conversion
+        with you below as we introduce using KMS.
+
+        The pattern for converting from ``byte[]`` to ``ByteBuffer`` is easy:
 
         .. code-block:: java
 
@@ -98,7 +102,7 @@ configured for us.
         twice on the same buffer, you'll get an empty array as the second result.
 
         The KMS Client API uses ``ByteBuffer`` for all plaintext and ciphertext inputs
-        and outputs, so you'll need to be comfortable converting between the two.
+        and outputs, so keep this conversion pattern in mind as you work through the exercises.
 
     .. group-tab:: Python
 
@@ -222,6 +226,8 @@ it in a field for later reference.
 Note that we don't need to provide the key ID to decrypt; decrypt will automatically
 determine which key to use based on the ciphertext.
 
+Now use the :ref:`Build tool commands` to deploy your updates.
+
 .. _Using the encryption context:
 
 Using the encryption context
@@ -279,6 +285,8 @@ actual encrypt call:
             context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
             request.setEncryptionContext(context);
 
+            The same code also needs to be placed right before the decrypt call as well.
+
     .. group-tab:: Python
 
         We need to set the encryption context on encrypt.
@@ -302,11 +310,10 @@ actual encrypt call:
                 EncryptionContext=encryption_context
             )
 
-The same code also needs to be placed right before the decrypt call as well.
 
-Once you've deployed this code and sent and received data with it, about 10
-minutes later the CloudTrail logs should show entries with the new encryption
-context fields.
+Once you've used the :ref:`Build tool commands` to deploy this code and sent and
+received data with it, about 10 minutes later the CloudTrail logs should show
+entries with the new encryption context fields.
 
 Extra credit
 ============
@@ -317,5 +324,5 @@ time - so you'll need to find a way to encode it into the message outside of
 the ciphertext.
 
 If you encode the order ID into the context, you'll see it flowing through to
-your CloudTrail logs as well - so you'll know which inquires are being
+your CloudTrail logs as well - so you'll know which inquiries are being
 decrypted.

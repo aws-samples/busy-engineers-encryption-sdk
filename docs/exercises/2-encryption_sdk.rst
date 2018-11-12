@@ -34,7 +34,7 @@ Note that any uncommitted changes you've made already will be lost.
 
 
 Exploring the guardrails of direct KMS
-=======================================
+======================================
 
 Directly using KMS means that your messages will be limited in size to 4096
 bytes. Try this out for yourself - copy and paste this block into the message
@@ -161,7 +161,7 @@ field, and see how KMS rejects the message:
 You may also have noticed that using the KMS client directly requires
 a fair amount of boilerplate - in particular, all those byte buffer
 conversions. It's also difficult to put any kind of dynamic data in
-the encryption context, as you need to find a separate place to store
+the Encryption Context, as you need to find a separate place to store
 those context values. We'll resolve all of these by converting things
 to use the encryption SDK instead.
 
@@ -171,7 +171,7 @@ Overview of exercise
 In this exercise we'll:
 
 #. Implement encryption using the AWS Encryption SDK
-#. Set up a dynamic encryption context
+#. Set up a dynamic Encryption Context
 
 Step by step
 ------------
@@ -195,7 +195,7 @@ First, let's make sure the encryption SDK is set up as a dependency correctly.
 
     .. group-tab:: Python
 
-        Open ``setup.py`` and add this requirement to ``install_requires``:
+        Open ``setup.py`` and ensure this requirement is in ``install_requires``:
 
         .. code-block:: python
 
@@ -254,7 +254,7 @@ so we can discard that value.
 
 
 The actual encryption process is much simpler than with KMS. We'll keep the
-encryption context mostly the same, and the body of encrypt can just be:
+Encryption Context mostly the same, and the body of encrypt can just be:
 
 .. tabs::
 
@@ -280,14 +280,6 @@ encryption context mostly the same, and the body of encrypt can just be:
 
     .. group-tab:: Python
 
-        First we need to import the encryption sdk.
-
-        .. code-block:: python
-
-            import aws_encryption_sdk
-
-        Now we update the ``encrypt()`` function to use the encryption sdk.
-
         .. code-block:: python
 
             def encrypt(self, data):
@@ -304,7 +296,7 @@ encryption context mostly the same, and the body of encrypt can just be:
                 )
                 return base64.b64encode(ciphertext).decode("utf-8")
 
-For decrypt, we no longer need to construct an encryption context because the
+For decrypt, we no longer need to construct an Encryption Context because the
 Encryption SDK records the original context for us. However, this means we now
 need to check that the context is consistent with what we expected.
 Decrypt therefore ends up looking like:
@@ -351,8 +343,9 @@ Decrypt therefore ends up looking like:
 
                 return json.loads(plaintext)
 
-At this point you should be able to deploy and test the application. Try
-entering the very large message from the start of this exercise; it should work
+Now use the :ref:`Build tool commands` to deploy your application again.
+
+Try entering the very large message from the start of this exercise; it should work
 now.
 
 .. note::
@@ -362,11 +355,11 @@ now.
     messages was needed for your application, you might want to consider putting
     the message in S3, and sending a reference to it via SQS.
 
-Adding additional audit metadata to your encryption context
+Adding additional audit metadata to your Encryption Context
 ===========================================================
 
 Now that you're using the encryption SDK, it's a lot easier to put
-dynamically-changing data in the encryption context. For example, we can record
+dynamically-changing data in the Encryption Context. For example, we can record
 the order ID just by doing:
 
 .. tabs::
@@ -379,6 +372,14 @@ the order ID just by doing:
 
     .. group-tab:: Python
 
+        First, import ``time``.
+
+        .. code-block:: python
+
+            import time
+
+        Now add the additional metadata.
+
         .. code-block:: python
 
             encryption_context = {
@@ -386,12 +387,17 @@ the order ID just by doing:
                 self._timestamp: str(int(time.time() / 3600.0)),
             }
 
-No changes are needed in decrypt (however, it's good practice to check at least
-that the key exists now). If you add this, send some messages, and then check
-your CloudTrail logs after 10 minutes, you'll see the encryption context values
+No changes are needed in decrypt. The AWS Encryption SDK stores Encryption Context
+for you on the message format it produces so that it is available to provide to
+KMS. Your client code can check for the presence or expected values of Encryption
+Context keys as a best practice.
+
+After adding these Encryption Context values, redeploy your application with the
+:ref:`Build tool commands`, send some messages, and then check
+your CloudTrail logs. After 10 minutes, you'll see the Encryption Context values
 flowing through.
 
-One caveat to note is that encryption context values can't be empty strings. To
-deal with this you can either use special values to indicate empty/null
-fields, or only add the key if the field has a meaningful value, or require
+One caveat to note is that Encryption Context values can't be empty strings. To
+deal with this you can either use special values to indicate empty/``null``
+fields, only add the key if the field has a meaningful value, or require
 that the field be present.

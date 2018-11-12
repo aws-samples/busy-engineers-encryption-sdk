@@ -21,12 +21,15 @@ verifying the identity of an encrypted message, and as a condition for grants an
     exercises/1-kms_encryption.rst
     exercises/2-encryption_sdk.rst
     exercises/3-caching.rst
+    cleaning-up.rst
 
 Getting started
 ***************
 
-Instructions on how to set up (and to shut down) the example application can be
+Instructions on how to set up the example application can be
 found in :ref:`Environment Setup`.
+
+When you are done with your experimentation, instructions to clean up the application are found in :ref:`Cleaning up`.
 
 List of exercises
 *****************
