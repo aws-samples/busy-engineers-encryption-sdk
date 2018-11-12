@@ -42,7 +42,7 @@ Using KMS directly
 In this exercise we'll use direct KMS
 `Encrypt <https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html>`_
 and `Decrypt <https://docs.aws.amazon.com/kms/latest/APIReference/API_Decrypt.html>`_
-calls to encrypt and decrypt data. We'll also set an appropriate encryption context,
+calls to encrypt and decrypt data. We'll also set an appropriate Encryption Context,
 and observe some of the subtle constraints when using KMS directly.
 
 The KMS SDK API
@@ -50,8 +50,10 @@ The KMS SDK API
 
 The project is already configured to import the KMS SDK.
 
-Client construction is simple. Since we're running in AWS Lambda, the region and credentials are automatically
-configured for us.
+Here's a demonstration of client construction -- it's pretty simple. Since we're running in AWS Lambda,
+the region and credentials are automatically configured for us.
+
+Don't worry about adding this client yet, we'll add it in along with other functionality explained below.
 
 .. tabs::
 
@@ -116,7 +118,7 @@ putting it together on your own, you can refer to the `KMS SDK API documentation
 <https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html>`_
 (`Java <https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/kms/AWSKMSClient.html>`_)
 (`Python <https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.encrypt>`_)
-and skip to :ref:`Using the encryption context` once you have it working; otherwise
+and skip to :ref:`Using the Encryption Context` once you have it working; otherwise
 we'll have specific directions below.
 
 Step by step
@@ -137,6 +139,7 @@ it in a field for later reference.
         We'll add to the top of our class a field definition for the client and key ID.
 
         .. code-block:: java
+           :lineno-start: 46
 
             private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
             private final AWSKMS kms; // <-- add this line
@@ -145,6 +148,7 @@ it in a field for later reference.
         Then, we'll initialize it in the constructor:
 
         .. code-block:: java
+           :lineno-start: 58
 
             @Inject
             public EncryptDecrypt(@Named("keyId") final String keyId) {
@@ -155,6 +159,7 @@ it in a field for later reference.
         In ``encrypt()``, we'll then build and issue the request:
 
         .. code-block:: java
+           :lineno-start: 73
 
                 EncryptRequest request = new EncryptRequest();
                 request.setKeyId(keyId);
@@ -165,6 +170,7 @@ it in a field for later reference.
         We'll then need to convert the resulting ciphertext to a byte array before base64ing it:
 
         .. code-block:: java
+           :lineno-start: 80
 
                 // Convert to byte array
                 byte[] ciphertext = new byte[result.getCiphertextBlob().remaining()];
@@ -175,6 +181,7 @@ it in a field for later reference.
         At this point encryption should be working. What's left is decryption, which works very similarly:
 
         .. code-block:: java
+           :lineno-start: 83
 
             public JsonNode decrypt(String ciphertext) throws IOException {
                 byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
@@ -196,12 +203,14 @@ it in a field for later reference.
         First we need to import the ``boto3`` library.
 
         .. code-block:: python
+           :lineno-start: 20
 
             import boto3
 
         We'll need to add handlers to our ``__init__`` to collect the key ID and create the KMS client.
 
         .. code-block:: python
+           :lineno-start: 30
 
             self.key_id = key_id
             self.kms = boto3.client("kms")
@@ -209,6 +218,7 @@ it in a field for later reference.
         In ``encrypt()`` we'll then call KMS and process the response.
 
         .. code-block:: python
+           :lineno-start: 39
 
             response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext)
             ciphertext = response["CiphertextBlob"]
@@ -217,6 +227,7 @@ it in a field for later reference.
         At this point encryption should be working. What's left is decryption, which works very similarly:
 
         .. code-block:: python
+           :lineno-start: 49
 
             ciphertext = base64.b64decode(data)
             response = self.kms.decrypt(CiphertextBlob=ciphertext)
@@ -228,28 +239,28 @@ determine which key to use based on the ciphertext.
 
 Now use the :ref:`Build tool commands` to deploy your updates.
 
-.. _Using the encryption context:
+.. _Using the Encryption Context:
 
-Using the encryption context
+Using the Encryption Context
 ============================
 
-When encrypting with KMS it's good practice to set an encryption context. This
+When encrypting with KMS it's good practice to set an Encryption Context. This
 helps ensure that your code doesn't decrypt data intended for a different
 purpose, and also helps improve your audit logging.
 
-One of the difficulties around encryption contexts with KMS is that it's
+One of the difficulties around Encryption Contexts with KMS is that it's
 necessary to store the context independently from the encrypted data, as it must
 be presented when decrypting as well. Here we'll just put a type tag on the
-encryption context, but if you're feeling ambitious we encourage you to try encoding
-the order ID field in the encryption context as well.
+Encryption Context, but if you're feeling ambitious we encourage you to try encoding
+the order ID field in the Encryption Context as well.
 
 In a later example we'll show you how the AWS Encryption SDK makes it easy to put
-richer information in the encryption context as well.
+richer information in the Encryption Context as well.
 
 Step by step
 ------------
 
-Adding an encryption context that just has a type field is fairly simple.
+Adding an Encryption Context that just has a type field is fairly simple.
 First, we'll define some constants at the top of the class:
 
 .. tabs::
@@ -257,6 +268,7 @@ First, we'll define some constants at the top of the class:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 47
 
             private static final String K_MESSAGE_TYPE = "message type";
             private static final String TYPE_ORDER_INQUIRY = "order inquiry";
@@ -264,11 +276,12 @@ First, we'll define some constants at the top of the class:
     .. group-tab:: Python
 
         .. code-block:: python
+           :lineno-start: 28
 
             self._message_type = "message_type"
             self._type_order_inquiry = "order inquiry"
 
-Since the strings used in the encryption context must match *exactly* between
+Since the strings used in the Encryption Context must match *exactly* between
 encrypt and decrypt, it's good practice to define them through shared constants
 to reduce the risk of typos.
 
@@ -280,6 +293,7 @@ actual encrypt call:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 79
 
             HashMap<String, String> context = new HashMap<>();
             context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
@@ -289,9 +303,10 @@ actual encrypt call:
 
     .. group-tab:: Python
 
-        We need to set the encryption context on encrypt.
+        We need to set the Encryption Context on encrypt.
 
         .. code-block:: python
+           :lineno-start: 41
 
             encryption_context = {self._message_type: self._type_order_inquiry}
             response = self.kms.encrypt(
@@ -303,6 +318,7 @@ actual encrypt call:
         And also on decrypt.
 
         .. code-block:: python
+           :lineno-start: 54
 
             encryption_context = {self._message_type: self._type_order_inquiry}
             response = self.kms.decrypt(
@@ -313,12 +329,12 @@ actual encrypt call:
 
 Once you've used the :ref:`Build tool commands` to deploy this code and sent and
 received data with it, about 10 minutes later the CloudTrail logs should show
-entries with the new encryption context fields.
+entries with the new Encryption Context fields.
 
 Extra credit
 ============
 
-Feeling ambitious? Try encoding the order ID into the encryption context as
+Feeling ambitious? Try encoding the order ID into the Encryption Context as
 well. The tricky part about this is that the order ID must be known at decrypt
 time - so you'll need to find a way to encode it into the message outside of
 the ciphertext.
