@@ -208,6 +208,7 @@ Now, let's add some imports:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 30
 
             import java.util.Objects;
             import com.amazonaws.encryptionsdk.AwsCrypto;
@@ -218,6 +219,7 @@ Now, let's add some imports:
     .. group-tab:: Python
 
         .. code-block:: python
+           :lineno-start: 21
 
             import aws_encryption_sdk
 
@@ -234,12 +236,14 @@ so we can discard that value.
         for the KMS master key.
 
         .. code-block:: java
+           :lineno-start: 56
 
             private final KmsMasterKey masterKey;
 
         In our constructor, we'll create the master key like so:
 
         .. code-block:: java
+           :lineno-start: 69
 
             this.masterKey = new KmsMasterKeyProvider(keyId)
                 .getMasterKey(keyId);
@@ -249,6 +253,7 @@ so we can discard that value.
         We won't need to keep the key ID around, so replace that in ``__init__`` with a new ``KMSMasterKeyProvider``.
 
         .. code-block:: python
+           :lineno-start: 32
 
             self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
 
@@ -261,6 +266,7 @@ Encryption Context mostly the same, and the body of encrypt can just be:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 73
 
             public String encrypt(JsonNode data) throws IOException {
                 FormData formValues = MAPPER.treeToValue(data, FormData.class);
@@ -281,6 +287,7 @@ Encryption Context mostly the same, and the body of encrypt can just be:
     .. group-tab:: Python
 
         .. code-block:: python
+           :lineno-start: 34
 
             def encrypt(self, data):
                 """Encrypt data.
@@ -306,6 +313,7 @@ Decrypt therefore ends up looking like:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 92
 
             public JsonNode decrypt(String ciphertext) throws IOException {
                 byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
@@ -323,6 +331,7 @@ Decrypt therefore ends up looking like:
     .. group-tab:: Python
 
         .. code-block:: python
+           :lineno-start: 50
 
             def decrypt(self, data):
                 """Decrypt data.
@@ -367,6 +376,7 @@ the order ID just by doing:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 82
 
             context.put("order ID", formValues.orderid);
 
@@ -375,12 +385,14 @@ the order ID just by doing:
         First, import ``time``.
 
         .. code-block:: python
+           :lineno-start: 19
 
             import time
 
         Now add the additional metadata.
 
         .. code-block:: python
+           :lineno-start: 41
 
             encryption_context = {
                 self._message_type: self._type_order_inquiry,

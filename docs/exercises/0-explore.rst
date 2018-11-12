@@ -182,6 +182,16 @@ data that will be mangled if we attempt to pass it as a string. So, as a first s
 
 If you want to try it yourself, stop here. Otherwise, read the detailed instructions below.
 
+.. hint::
+
+    We have added line numbers to example code throughout the workshop instructions to help you orient yourself in
+    the files.
+
+    As you make your changes, your line numbers might not
+    exactly match the example ones, but should still help you find the correct general location for a change.
+
+    Always feel free to ask for assistance if you aren't sure what section of code is being discussed.
+
 Detailed steps
 --------------
 

@@ -65,6 +65,7 @@ First, we'll add the new imports we'll need:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 25
 
             import java.util.concurrent.TimeUnit;
             import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
@@ -83,6 +84,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 54
 
             private final CryptoMaterialsManager materialsManager;
 
@@ -92,6 +94,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         In our constructor, we'll set up our master key, cache, and caching materials manager:
 
         .. code-block:: java
+           :lineno-start: 67
 
             KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
                 .getMasterKey(keyId);
@@ -109,6 +112,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         We'll set up the master key provider, cache, and caching materials manager in our ``__init__``:
 
         .. code-block:: python
+           :lineno-start: 32
 
             master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
             cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
@@ -119,24 +123,34 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
                 max_messages_encrypted=10
             )
 
-And finally, we'll use the materialsManager instead of our masterKey in our
+And finally, we'll use the ``materialsManager`` instead of our ``masterKey`` in our
 encrypt and decrypt operations:
 
 .. tabs::
 
     .. group-tab:: Java
 
+        In your ``encrypt`` function, which should start around line 79, change how you compute ``ciphertext``:
+
         .. code-block:: java
+           :lineno-start: 92
 
-            byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
+           byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
 
-            // ...
+
+        And in ``decrypt``, which should start around line 97, change how you compute your ``CryptoResult``:
+
+        .. code-block:: java
+           :lineno-start: 100
 
             CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(materialsManager, ciphertextBytes);
 
     .. group-tab:: Python
 
+        In your ``encrypt`` function, change how you compute ``ciphertext``:
+
         .. code-block:: python
+           :lineno-start: 49
 
             ciphertext, _header = aws_encryption_sdk.encrypt(
                 source=json.dumps(data),
@@ -144,7 +158,10 @@ encrypt and decrypt operations:
                 encryption_context=encryption_context
             )
 
-            # ...
+        And in ``decrypt``, change how you compute ``plaintext``:
+
+        .. code-block:: python
+           :lineno-start: 61
 
             plaintext, header = aws_encryption_sdk.decrypt(
                 source=ciphertext,
@@ -165,9 +182,9 @@ Try sending a few messages in a row with different order IDs. You'll note that
 the cache doesn't work in this case; this is because messages with different
 encryption contexts cannot use the same cached result.
 
-This illustrates the balance that needs to be struck between cacheability and
-audit log verbosity; if we put too much detail in our audit logs, then caching
-won't do us any good.
+This illustrates the balance that needs to be struck between cache performance,
+access control verification, and audit log verbosity: improving cache performance
+requires reducing the fidelity of the other two elements.
 
 To get benefit from caching here, we'll need to strike a different balance. For
 example, instead of putting the order ID in the audit log, we could put an
@@ -178,12 +195,14 @@ example, instead of putting the order ID in the audit log, we could put an
     .. group-tab:: Java
 
         .. code-block:: java
+           :lineno-start: 90
 
             context.put("approximate timestamp", "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
 
     .. group-tab:: Python
 
         .. code-block:: python
+           :lineno-start: 45
 
             encryption_context = {
                 self._message_type: self._type_order_inquiry,
