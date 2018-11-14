@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Busy Engineer's Guide to the AWS Encryption SDK Cloud9 Environment
+Parameters: 
+  RegionParameter: 
+    Type: String
+    Default: us-east-2
+    AllowedValues: 
+      - us-east-1
+      - us-east-2
+      - us-west-2
+      - eu-west-1
+      - ap-southeast-1
+    Description: Pick a valid region that supports Cloud9.
+
+Resources:
+  #--------------------------------------------------------------------------------
+  # Our Cloud9 development environment
+  BusyEngineersEncryptionSDK:
+    Type: "AWS::Cloud9::EnvironmentEC2"
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: !ImportValue Cloud9SubnetToUse
+      AutomaticStopTimeMinutes: 30
+      Repositories:
+        - PathComponent: /busy-engineers-encryption-sdk
+          RepositoryUrl: https://github.com/aws-samples/busy-engineers-encryption-sdk.git
