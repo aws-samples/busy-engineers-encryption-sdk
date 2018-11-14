@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Reinvent-sid345 Base Environment
+Description: The Busy Engineer's Guide to the Encryption SDK Base Environment
 Parameters: 
   RegionParameter: 
     Type: String
-    Default: eu-west-1
+    Default: us-east-2
     AllowedValues: 
       - us-east-1
       - us-east-2

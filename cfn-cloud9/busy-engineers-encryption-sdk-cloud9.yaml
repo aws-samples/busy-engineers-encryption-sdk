@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Reinvent-sid345 Cloud9 Environment
+Description: The Busy Engineer's Guide to the AWS Encryption SDK Cloud9 Environment
 Parameters: 
   RegionParameter: 
     Type: String
-    Default: eu-west-1
+    Default: us-east-2
     AllowedValues: 
       - us-east-1
       - us-east-2
@@ -15,12 +15,12 @@ Parameters:
 Resources:
   #--------------------------------------------------------------------------------
   # Our Cloud9 development environment
-  ReinventSid345Cloud9:
+  BusyEngineersEncryptionSDK:
     Type: "AWS::Cloud9::EnvironmentEC2"
     Properties:
       InstanceType: t2.micro
       SubnetId: !ImportValue Cloud9SubnetToUse
       AutomaticStopTimeMinutes: 30
       Repositories:
-        - PathComponent: /reinvent-sid345-workshop-sample
-          RepositoryUrl: https://github.com/aws-samples/reinvent-sid345-workshop-sample.git
+        - PathComponent: /busy-engineers-encryption-sdk
+          RepositoryUrl: https://github.com/aws-samples/busy-engineers-encryption-sdk.git
