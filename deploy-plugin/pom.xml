@@ -16,7 +16,7 @@
     -->
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>reinvent-demo</groupId>
+    <groupId>workshop-demo</groupId>
     <artifactId>cf-deploy-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
