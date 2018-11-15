@@ -17,6 +17,6 @@
     -->
 
     <pluginGroups>
-        <pluginGroup>reinvent-demo</pluginGroup>
+        <pluginGroup>workshop-demo</pluginGroup>
     </pluginGroups>
 </settings>
