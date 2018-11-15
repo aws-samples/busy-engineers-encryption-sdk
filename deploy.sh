@@ -4,8 +4,8 @@ set -x
 set -u
 set -e
 
-BUCKET=sid345.reinvent-workshop.com
-CFDISTRO=E11MLVAL7KJ1N2
+BUCKET=busy-engineers-guide.reinvent-workshop.com
+CFDISTRO=E1YZZI7YTR2LFY
 
 aws s3 sync --acl public-read docs/build/html s3://$BUCKET
 
