@@ -2,4 +2,4 @@ Code:
   S3Bucket: !Ref S3Bucket
   S3Key: !Ref CodeKey
   S3ObjectVersion: !Ref CodeVersion
-Handler: reinvent_sid345.handler.lambda_handler
+Handler: busy_engineers_workshop.handler.lambda_handler
