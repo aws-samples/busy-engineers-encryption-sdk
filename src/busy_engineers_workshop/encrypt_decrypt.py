@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 """Helper class to handle encryption.
 
-This is the only module that you need to modify in the SID345 workshop.
+This is the only module that you need to modify in the Busy Engineer's Guide to the Encryption SDK workshop.
 """
 import base64
 import json

@@ -1,4 +1,4 @@
-"""Deployment helper tool for Re:Invent SID345 workshop, Python track."""
+"""Deployment helper tool for Busy Engineer's Guide to the AWS Encryption SDK workshop, Python track."""
 import argparse
 import logging
 import mimetypes
@@ -38,7 +38,7 @@ PARAMETERS_BOOTSTRAP = ""
 PARAMETERS_UPDATE = os.path.join(HERE, "update-parameters.yaml")
 WAITER_CONFIG = dict(Delay=10)
 STATIC_ASSETS_PREFIX = "static-assets/"
-_LOGGER = logging.getLogger("ReInvent Deployer")
+_LOGGER = logging.getLogger("Encryption SDK Workshop Deployer")
 
 
 def _collect_config(config_filename: Text, lambda_filename: Optional[Text]) -> DeployConfig:
