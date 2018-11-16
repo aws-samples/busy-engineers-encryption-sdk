@@ -39,8 +39,8 @@ HOST=${1?Host name must be provided}
 # 2 : key
 KEY=${2?Key must be provided}
 
-DIR='reinvent_sid345_artifacts'
-FILENAME='reinvent_sid345_python.zip'
+DIR='busy_engineers_workshop_artifacts'
+FILENAME='busy_engineers_workshop_python.zip'
 
 rm -rf ${DIR}
 mkdir ${DIR}
