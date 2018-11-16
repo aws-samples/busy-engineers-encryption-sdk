@@ -1,9 +1,9 @@
 
 .. _Main:
 
-###########################################################
-SID345: The Busy Engineer's Guide to the AWS Encryption SDK
-###########################################################
+#################################################
+A Busy Engineer's Guide to the AWS Encryption SDK
+#################################################
 
 In this workshop, you will add encryption and decryption features to a simple web application that
 sends form data over Amazon SQS.

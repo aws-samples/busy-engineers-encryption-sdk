@@ -66,7 +66,7 @@ the example application.
 Our build tools automatically build the Lambda, use AWS CloudFormation to deploy AWS resources, and
 uploads the built application as a Lambda function. The initial deployment typically takes 3-5
 minutes to complete. You can monitor the progress of the deployment on the `CloudFormation console
-<https://eu-west-1.console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks?filter=active>`_.
+<https://us-east-2.console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks?filter=active>`_.
 
 When the deployment completes, you'll see output like this.
 
@@ -77,13 +77,13 @@ When the deployment completes, you'll see output like this.
         .. code-block:: bash
 
             [INFO] Deployment successful.
-            [INFO] Deployment URL: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
+            [INFO] Deployment URL: https://EXAMPLE.execute-api.us-east-2.amazonaws.com/test/
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            Endpoint available at: https://EXAMPLE.execute-api.eu-west-1.amazonaws.com/test/
+            Endpoint available at: https://EXAMPLE.execute-api.us-east-2.amazonaws.com/test/
 
 To go to the sample application, open the URL in the output.
 
@@ -106,11 +106,11 @@ Cleaning up
 -----------
 
 When you're done with the workshop, you can shut down the application and clean
-up its AWS resources using the instructions in the :ref:`Clean up` section.
+up its AWS resources using the instructions in the :ref:`Cleaning up` section.
 
 This destroys all AWS resources related to the demo application except for the
 CloudWatch Log groups that AWS Lambda generated. You can delete those log groups from
-`the CloudWatch console <https://eu-west-1.console.aws.amazon.com/cloudwatch/home?region=eu-west-1#logs:>`_.
+`the CloudWatch console <https://us-east-2.console.aws.amazon.com/cloudwatch/home?region=us-east-2#logs:>`_.
 
 .. _Exploring the example application:
 
@@ -172,7 +172,7 @@ deploying them.
     .. group-tab:: Python
 
         We've created an ``EncryptDecrypt`` placeholder class for your encryption and data encoding logic.
-        You'll see the class under ``src/reinvent_sid345/encrypt_decrypt.py``.
+        You'll see the class under ``src/busy_engineers_workshop/encrypt_decrypt.py``.
         After you've worked through this workshop, this class will convert between plaintext and ciphertext.
 
 
@@ -236,7 +236,7 @@ Detailed steps
         We'll use the builtin ``base64`` module.
 
         .. code-block:: python
-           :lineno-start: 18
+           :lineno-start: 17
 
            import base64
 
