@@ -12,7 +12,7 @@ and policies.
 # Getting started
 
 Instructions on how to set up (and to shut down) the example application, as well as the actual exercises
-can be [found here](http://sid345.reinvent-workshop.com), or in the 'exercises' branch of this repository.
+can be [found here](http://busy-engineers-guide.reinvent-workshop.com), or in the 'exercises' branch of this repository.
 
 # License information
 
