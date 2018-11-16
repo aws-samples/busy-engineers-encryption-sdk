@@ -32,7 +32,7 @@
 # JSON that shows you the new VersionId of the uploaded
 # file in S3.
 
-DIR='reinvent_sid345_artifacts'
+DIR='busy_engineers_workshop_artifacts'
 
 rm -rf ${DIR}
 mkdir ${DIR}

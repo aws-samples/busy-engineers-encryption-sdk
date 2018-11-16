@@ -15,8 +15,8 @@
 #This helper script builds the zip file for Lambda. See
 # python-build-remote.sh for more information.
 
-FILENAME='reinvent_sid345_python.zip'
-DIR='reinvent_sid345_artifacts'
+FILENAME='busy_engineers_workshop_python.zip'
+DIR='busy_engineers_workshop_artifacts'
 
 sudo yum install -y python36
 
@@ -25,7 +25,7 @@ rm -rf py36test dep_dir
 virtualenv py36test -p python3.6
 source py36test/bin/activate
 mkdir dep_dir
-pip install reinvent_sid345-*.tar.gz -t dep_dir
+pip install busy_engineers_workshop-*.tar.gz -t dep_dir
 deactivate
 cd dep_dir
 zip -r ../${FILENAME} .
