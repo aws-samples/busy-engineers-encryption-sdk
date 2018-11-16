@@ -199,7 +199,7 @@ First, let's make sure the encryption SDK is set up as a dependency correctly.
 
         .. code-block:: python
 
-            install_requires=["aws_encryption_sdk>=1.3.2"]
+            install_requires=["aws_encryption_sdk>=1.3.8"]
 
 Now, let's add some imports:
 
