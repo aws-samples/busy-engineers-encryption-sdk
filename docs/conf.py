@@ -1,7 +1,7 @@
 """Sphinx configuration."""
 from datetime import datetime
 
-project = "re:Invent SID345 Workshop"
+project = "A Busy Engineer's Guide to the AWS Encryption SDK"
 
 source_suffix = ".rst"  # The suffix of source filenames.
 master_doc = "index"  # The master toctree document.
@@ -28,5 +28,5 @@ htmlhelp_basename = "%sdoc" % project
 autosummary_generate = True
 
 rst_prolog = """
-.. |region| replace:: eu-west-1
+.. |region| replace:: us-east-2
 """

@@ -38,22 +38,26 @@ Cleaning up your development environment
 
         The CloudFormation templates in :ref:`Environment Setup` create three CloudFormation stacks to clean up.
 
-        Use the `CloudFormation console <https://eu-west-1.console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks?filter=active>`_ to clean up
-        the stacks created for your Cloud9 setup.
+        Use the |cloud9_console_link| to clean up the stacks created for your Cloud9 setup.
+
+        .. |cloud9_console_link| raw:: html
+
+            <a href="https://us-east-2.console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks?filter=active" target="_blank">
+            CloudFormation console</a>
 
         They'll be named as follows. Delete them in this order:
 
-        #. ``aws-cloud9-ReinventSid345Cloud9-<string>``
-        #. ``MySid345Cloud9Env``
-        #. ``MySid345BaseEnv``
+        #. ``aws-cloud9-BusyEngineersEncryptionSDK-<string>``
+        #. ``BusyEngineersSdkCloud9``
+        #. ``BusyEngineersSdkBase``
 
     .. group-tab:: Manual
 
-        Open `the EC2 console for eu-west-1
-        <https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Instances:sort=instanceId>`_.
+        Open `the EC2 console for us-east-2
+        <https://us-east-2.console.aws.amazon.com/ec2/v2/home?region=us-east-2#Instances:sort=instanceId>`_.
 
         Terminate the instance you created earlier.
 
-        Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=eu-west-1#/roles>`_.
+        Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=us-east-2#/roles>`_.
 
-        Remove the ``sid345-admin`` role.
+        Remove the ``busy-engineers-workshop-admin`` role.
