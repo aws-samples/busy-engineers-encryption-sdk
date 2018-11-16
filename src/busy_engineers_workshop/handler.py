@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Main Lambda handler for SID345."""
+"""Main Lambda handler for A Busy Engineer's Guide to AWS Encryption SDK."""
 import base64
 import json
 import logging
@@ -21,9 +21,9 @@ from itertools import zip_longest
 
 import boto3
 
-from reinvent_sid345._log_listener import KmsLogListener
-from reinvent_sid345.encrypt_decrypt import EncryptDecrypt
-from reinvent_sid345.responses import bad_request, json_error, json_response
+from busy_engineers_workshop._log_listener import KmsLogListener
+from busy_engineers_workshop.encrypt_decrypt import EncryptDecrypt
+from busy_engineers_workshop.responses import bad_request, json_error, json_response
 
 SQS_QUEUE_VAR = "queue_url"
 KMS_CMK_VAR = "kms_key_id"
