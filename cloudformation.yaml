@@ -26,28 +26,10 @@ Resources:
           - ExpirationInDays: 1
             Status: Enabled
             Prefix: "AWSLogs/"
-      VersioningConfiguration:
-        Status: Enabled
 
   ## The sqs queue we will deliver encrypted messages to
   SQSQueue:
     Type: 'AWS::SQS::Queue'
-
-  ## API Gateway Roles
-  ApiCloudwatchRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - 'sts:AssumeRole'
-            Effect: Allow
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
 
   ## API Gateway related resources
   RestAPI:
@@ -57,12 +39,6 @@ Resources:
       # TODO: Remove this and use modeled JSON structures?
         - '*/*'
       Name: !Ref 'AWS::StackName'
-  RestAPICloudWatch:
-    Type: 'AWS::ApiGateway::Account'
-    Properties:
-      CloudWatchRoleArn: !GetAtt ApiCloudwatchRole.Arn
-    DependsOn:
-      - RestAPI
   RestAPIRootGET:
   # Handle a GET on the root by proxying through to our index.html static asset
     Type: 'AWS::ApiGateway::Method'
@@ -201,8 +177,6 @@ Resources:
       MethodSettings:
         - ResourcePath: /*
           HttpMethod: '*'
-          DataTraceEnabled: true
-          LoggingLevel: INFO
 
   ApiDeployment%UNIQUE%:
     Type: 'AWS::ApiGateway::Deployment'
@@ -306,37 +280,6 @@ Resources:
           use_cache: true
           log_group_name: !Ref CloudtrailLogGroup
 
-# To use this Python Lambda Function:
-# 1. Use "mvn deploy" to create the S3 bucket and all other resources
-# 2. Either comment out the above "LambdaFunc" resource or change its name
-# 3. Uncomment the below "LambdaFunc" resource
-# 4. Use python-build-remote.sh to build the Python package and upload it to the S3 bucket
-# 5. Update the S3ObjectVersion value below with the value you received from python-build-remote.sh
-# 6. Use "mvn deploy" to update the stack with the new Lambda Function
-#
-# To apply any updates to the Python Lambda Function, repeat steps 4, 5, and 6.
-#
-#  LambdaFunc:
-#    Type: 'AWS::Lambda::Function'
-#    Properties:
-#      Code:
-#        S3Bucket: !Ref S3Bucket
-#        S3Key: reinvent_sid345_python.zip
-#        S3ObjectVersion: 1qWn1OjoiAs4jv03EX3hCylttOEh7TIb
-#      Handler: reinvent_sid345.handler.lambda_handler
-#      ## We don't need this much memory, but setting a high memorysize means we get more CPU allocated, which reduces
-#      ## startup times.
-#      MemorySize: 1536
-#      Role: !GetAtt LambdaRole.Arn
-#      Runtime: python3.6
-#      Timeout: 30
-#      Environment:
-#        Variables:
-#          kms_key_id: !GetAtt KMSKey.Arn
-#          queue_url: !Ref SQSQueue
-#          use_cache: true
-#          log_group_name: !Ref CloudtrailLogGroup
-
   MainAppPermissions:
     Type: 'AWS::Lambda::Permission'
     Properties:
@@ -354,7 +297,7 @@ Resources:
       IsLogging: true
       CloudWatchLogsLogGroupArn: !GetAtt CloudtrailLogGroup.Arn
       CloudWatchLogsRoleArn: !GetAtt CloudtrailRole.Arn
-      # an S3 bucket is still required, even when using CWlogs delivery
+# an S3 bucket is still required, even when using CWlogs delivery
       S3BucketName: !Ref S3Bucket
     DependsOn:
      # We need to wait for the various IAM policies to be configured, as CW logs will validate these policies when the
