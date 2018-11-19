@@ -1,8 +1,8 @@
 
-.. _Exercise 1:
+.. _Exercise 2:
 
 ***************************
-Exercise 1: Introducing KMS
+Exercise 2: Introducing KMS
 ***************************
 
 In our previous exercise, we updated the application to use base64 encoding in
@@ -13,7 +13,7 @@ arise when using KMS directly as well.
 Before we start
 ===============
 
-We'll assume that you've completed the code changes in :ref:`Exercise 0`
+We'll assume that you've completed the code changes in :ref:`Exercise 1`
 first. If you haven't, you can use this git command to catch up:
 
 .. tabs::
@@ -22,18 +22,18 @@ first. If you haven't, you can use this git command to catch up:
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-1 origin/exercise-1-start
+            git checkout -f -B exercise-2 origin/exercise-2-start-java
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-1 origin/exercise-1-start-python
+            git checkout -f -B exercise-2 origin/exercise-2-start-python
 
 This will give you a codebase that already has the base64 changes applied.
 Note that any uncommitted changes you've made already will be lost.
 
-If you haven't done Exercise 0 at all, we encourage you to go through the
+If you haven't done Exercise 1 at all, we encourage you to go through the
 preparation and deployment steps in there at a minimum.
 
 Using KMS directly

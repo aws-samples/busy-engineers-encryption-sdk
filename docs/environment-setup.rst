@@ -288,7 +288,7 @@ Prerequisites Installation
         such as ``vim`` or ``emacs``.
 
 At this point you should have a Linux system that can deploy the example application with the instructions in
-:ref:`Exercise 0`.
+:ref:`Exercise 1`.
 
 .. _AWS CLI documentation: https://docs.aws.amazon.com/cli/index.html
 .. _The AWS CLI: https://docs.aws.amazon.com/cli/index.html

@@ -1,8 +1,8 @@
 
-.. _Exercise 2:
+.. _Exercise 3:
 
 **********************************
-Exercise 2: The AWS Encryption SDK
+Exercise 3: The AWS Encryption SDK
 **********************************
 
 So far we've been working with the SDK's KMS client directly. This has a few
@@ -11,7 +11,7 @@ limitations, as we'll see.
 Before we start
 ===============
 
-We'll assume that you've completed the code changes in :ref:`Exercise 1`
+We'll assume that you've completed the code changes in :ref:`Exercise 2`
 first. If you haven't, you can use this git command to catch up:
 
 .. tabs::
@@ -20,16 +20,16 @@ first. If you haven't, you can use this git command to catch up:
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-2 origin/exercise-2-start
+            git checkout -f -B exercise-3 origin/exercise-3-start-java
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-2 origin/exercise-2-start-python
+            git checkout -f -B exercise-3 origin/exercise-3-start-python
 
 This will give you a codebase that includes the base64 changes and direct
-KMS encryption from Exercises 0 and 1.
+KMS encryption from Exercises 1 and 2.
 Note that any uncommitted changes you've made already will be lost.
 
 

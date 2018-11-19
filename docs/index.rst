@@ -17,10 +17,10 @@ verifying the identity of an encrypted message, and as a condition for grants an
     :maxdepth: 1
 
     environment-setup.rst
-    exercises/0-explore.rst
-    exercises/1-kms_encryption.rst
-    exercises/2-encryption_sdk.rst
-    exercises/3-caching.rst
+    exercises/1-explore.rst
+    exercises/2-kms_encryption.rst
+    exercises/3-encryption_sdk.rst
+    exercises/4-caching.rst
     cleaning-up.rst
 
 Getting started
@@ -34,10 +34,10 @@ When you are done with your experimentation, instructions to clean up the applic
 List of exercises
 *****************
 
-* :ref:`Exercise 0` - Explore the example application and make your first change
-* :ref:`Exercise 1` - Add KMS encryption to the example application
-* :ref:`Exercise 2` - Add encryption using the AWS Encryption SDK
-* :ref:`Exercise 3` - Add caching to the example application
+* :ref:`Exercise 1` - Explore the example application and make your first change
+* :ref:`Exercise 2` - Add KMS encryption to the example application
+* :ref:`Exercise 3` - Add encryption using the AWS Encryption SDK
+* :ref:`Exercise 4` - Add caching to the example application
 
 Additional exploration
 **********************

@@ -1,8 +1,8 @@
 
-.. _Exercise 3:
+.. _Exercise 4:
 
 ****************************
-Exercise 3: Data Key Caching
+Exercise 4: Data Key Caching
 ****************************
 
 You may have noticed by now that when you send or receive messages, we report
@@ -18,7 +18,7 @@ and how it can help mitigate this issue.
 Before we start
 ===============
 
-We'll assume that you've completed the code changes in :ref:`Exercise 2`
+We'll assume that you've completed the code changes in :ref:`Exercise 3`
 first. If you haven't, you can use this git command to catch up:
 
 .. tabs::
@@ -27,13 +27,13 @@ first. If you haven't, you can use this git command to catch up:
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-3 origin/exercise-3-start
+            git checkout -f -B exercise-4 origin/exercise-4-start-java
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-3 origin/exercise-3-start-python
+            git checkout -f -B exercise-4 origin/exercise-4-start-python
 
 This will give you a codebase that already uses the AWS Encryption SDK.
 Note that any uncommitted changes you've made already will be lost.

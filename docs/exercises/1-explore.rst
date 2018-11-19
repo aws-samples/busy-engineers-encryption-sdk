@@ -1,8 +1,8 @@
 
-.. _Exercise 0:
+.. _Exercise 1:
 
 *******************
-Exercise 0: Explore
+Exercise 1: Explore
 *******************
 
 We've prepared a simple example application. We'll use this application to explore different ways
@@ -16,13 +16,13 @@ Check out the first application branch for the language of your choice:
 
         .. code-block:: bash
 
-            git checkout exercise-0-start
+            git checkout exercise-1-start-java
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            git checkout exercise-0-start-python
+            git checkout exercise-1-start-python
 
 And deploy using the appropriate :ref:`Build tool commands`.
 
