@@ -22,13 +22,13 @@ first. If you haven't, you can use this git command to catch up:
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-1 origin/exercise-2-start-java
+            git checkout -f -B exercise-2 origin/exercise-2-start-java
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-1 origin/exercise-2-start-python
+            git checkout -f -B exercise-2 origin/exercise-2-start-python
 
 This will give you a codebase that already has the base64 changes applied.
 Note that any uncommitted changes you've made already will be lost.

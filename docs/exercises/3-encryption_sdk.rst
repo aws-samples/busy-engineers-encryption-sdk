@@ -29,7 +29,7 @@ first. If you haven't, you can use this git command to catch up:
             git checkout -f -B exercise-3 origin/exercise-3-start-python
 
 This will give you a codebase that includes the base64 changes and direct
-KMS encryption from Exercises 0 and 1.
+KMS encryption from Exercises 1 and 2.
 Note that any uncommitted changes you've made already will be lost.
 
 
