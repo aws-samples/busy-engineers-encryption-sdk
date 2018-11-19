@@ -224,7 +224,7 @@ it in a field for later reference.
             ciphertext = response["CiphertextBlob"]
             return base64.b64encode(ciphertext).decode("utf-8")
 
-        At this point encryption should be working. What's left is decryption, which works very similarly:
+        At this point encryption should be working. What's left is decryption, which works very similarly.  Insert the below lines into the ``decrypt()`` function:
 
         .. code-block:: python
            :lineno-start: 49
