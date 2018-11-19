@@ -29,7 +29,7 @@ echo ""
 echo ""
 sudo /usr/sbin/alternatives  --config javac
 
-sudo wget http://sid345.reinvent-workshop.com/software/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sudo wget http://busy-engineers-guide.reinvent-workshop.com/software/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
 sudo sed -i s/\$releasever/7/g /etc/yum.repos.d/epel-apache-maven.repo
 sudo yum install -y apache-maven
 mvn --version
