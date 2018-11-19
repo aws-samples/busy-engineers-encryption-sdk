@@ -195,6 +195,12 @@ If you want to try it yourself, stop here. Otherwise, read the detailed instruct
 Detailed steps
 --------------
 
+Here and throughout the workshop, we will provide detailed steps for you to explore and work through the workshop
+on your own.
+
+If you would rather see all the required changes at once, or if you would like to check your work, jump to the
+:ref:`Complete change` section at the end of each exercise.
+
 .. tabs::
 
     .. group-tab:: Java
@@ -271,6 +277,74 @@ Detailed steps
 After you've made the changes, use the appropriate :ref:`Build tool commands` to deploy them. Then try sending
 and receiving a sample message. Now, when you use the **Ciphertext** radio button on the **Receive data** tab, you
 should see the Base64-encoded message.
+
+Complete change
+---------------
+
+View step-by-step changes in context, and compare your work if desired.
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        .. code:: diff
+
+            diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            index 78f02a1..5013095 100644
+            --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            @@ -66,10 +66,14 @@ public class EncryptDecrypt {
+
+                     // TODO: Encryption goes here
+
+            -        return MAPPER.writeValueAsString(formValues);
+            +        byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
+            +
+            +        return Base64.getEncoder().encodeToString(plaintext);
+                 }
+
+                 public JsonNode decrypt(String ciphertext) throws IOException {
+            -        return MAPPER.readTree(ciphertext);
+            +        byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+            +
+            +        return MAPPER.readTree(ciphertextBytes);
+                 }
+             }
+
+    .. group-tab:: Python
+
+        .. code:: diff
+
+            diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
+            index da41568..0e34c26 100644
+            --- a/src/busy_engineers_workshop/encrypt_decrypt.py
+            +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
+            @@ -14,6 +14,7 @@
+
+             This is the only module that you need to modify in the Busy Engineer's Guide to the Encryption SDK workshop.
+             """
+            +import base64
+             import json
+
+
+            @@ -34,7 +35,8 @@ class EncryptDecrypt(object):
+                     :returns: Base64-encoded, encrypted data
+                         :rtype: str
+                         """
+                -        return json.dumps(data)
+                +        plaintext = json.dumps(data).encode("utf-8")
+                +        return base64.b64encode(plaintext).decode("utf-8")
+
+                     def decrypt(self, data):
+                         """Decrypt data.
+                @@ -42,4 +44,5 @@ class EncryptDecrypt(object):
+                         :param bytes data: Base64-encoded, encrypted data
+                         :returns: JSON-decoded, decrypted data
+                         """
+                -        return json.loads(data)
+                +        plaintext = base64.b64decode(data).decode("utf-8")
+                +        return json.loads(plaintext)
+
 
 .. _The AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html
 .. _JDK 1.8: https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
