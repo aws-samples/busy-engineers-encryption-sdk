@@ -36,6 +36,9 @@ Note that any uncommitted changes you've made already will be lost.
 If you haven't done Exercise 1 at all, we encourage you to go through the
 preparation and deployment steps in there at a minimum.
 
+The :ref:`Complete change` section is also available to help you view changes in context
+and compare your work.
+
 Using KMS directly
 ==================
 
@@ -330,6 +333,142 @@ actual encrypt call:
 Once you've used the :ref:`Build tool commands` to deploy this code and sent and
 received data with it, about 10 minutes later the CloudTrail logs should show
 entries with the new Encryption Context fields.
+
+.. _Complete change:
+
+Complete change
+---------------
+
+View step-by-step changes in context, and compare your work if desired.
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        .. code:: diff
+
+            diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            index 5013095..29b6f71 100644
+            --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            @@ -44,6 +44,11 @@ import com.fasterxml.jackson.databind.JsonNode;
+             @Singleton
+             public class EncryptDecrypt {
+                 private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
+            +    private static final String K_MESSAGE_TYPE = "message type";
+            +    private static final String TYPE_ORDER_INQUIRY = "order inquiry";
+            +
+            +    private final AWSKMS kms;
+            +    private final String keyId;
+
+                 @SuppressWarnings("unused") // all fields are used via JSON deserialization
+                 private static class FormData {
+            @@ -55,7 +60,8 @@ public class EncryptDecrypt {
+
+                 @Inject
+                 public EncryptDecrypt(@Named("keyId") final String keyId) {
+            -        // TODO - do something with keyId?
+            +        kms = AWSKMSClient.builder().build();
+            +        this.keyId = keyId;
+                 }
+
+                 public String encrypt(JsonNode data) throws IOException {
+            @@ -64,16 +70,41 @@ public class EncryptDecrypt {
+                     // We can access specific form fields using values in the parsed FormData object.
+                     LOGGER.info("Got form submission for order " + formValues.orderid);
+
+            -        // TODO: Encryption goes here
+            -
+                     byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
+
+            -        return Base64.getEncoder().encodeToString(plaintext);
+            +        EncryptRequest request = new EncryptRequest();
+            +        request.setKeyId(keyId);
+            +        request.setPlaintext(ByteBuffer.wrap(plaintext));
+            +
+            +        HashMap<String, String> context = new HashMap<>();
+            +        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+            +        request.setEncryptionContext(context);
+            +
+            +        EncryptResult result = kms.encrypt(request);
+            +
+            +        // Convert to byte array
+            +        byte[] ciphertext = new byte[result.getCiphertextBlob().remaining()];
+            +        result.getCiphertextBlob().get(ciphertext);
+            +
+            +        return Base64.getEncoder().encodeToString(ciphertext);
+                 }
+
+                 public JsonNode decrypt(String ciphertext) throws IOException {
+                     byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+
+            -        return MAPPER.readTree(ciphertextBytes);
+            +        DecryptRequest request = new DecryptRequest();
+            +        request.setCiphertextBlob(ByteBuffer.wrap(ciphertextBytes));
+            +
+            +        HashMap<String, String> context = new HashMap<>();
+            +        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+            +        request.setEncryptionContext(context);
+            +
+            +        DecryptResult result = kms.decrypt(request);
+            +
+            +        // Convert to byte array
+            +        byte[] plaintext = new byte[result.getPlaintext().remaining()];
+            +        result.getPlaintext().get(plaintext);
+            +
+            +        return MAPPER.readTree(plaintext);
+                 }
+             }
+
+    .. group-tab:: Python
+
+        .. code:: diff
+
+            diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
+            index 0e34c26..b7e8e07 100644
+            --- a/src/busy_engineers_workshop/encrypt_decrypt.py
+            +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
+            @@ -17,6 +17,8 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
+             import base64
+             import json
+
+            +import boto3
+            +
+
+             class EncryptDecrypt(object):
+                 """Encrypt and decrypt data."""
+            @@ -27,6 +29,7 @@ class EncryptDecrypt(object):
+                     self._type_order_inquiry = "order inquiry"
+                     self._timestamp = "rough timestamp"
+                     self.key_id = key_id
+            +        self.kms = boto3.client("kms")
+
+                 def encrypt(self, data):
+                     """Encrypt data.
+            @@ -35,8 +38,11 @@ class EncryptDecrypt(object):
+                     :returns: Base64-encoded, encrypted data
+                         :rtype: str
+                         """
+                +        encryption_context = {self._message_type: self._type_order_inquiry}
+                         plaintext = json.dumps(data).encode("utf-8")
+                -        return base64.b64encode(plaintext).decode("utf-8")
+                +        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
+                +        ciphertext = response["CiphertextBlob"]
+                +        return base64.b64encode(ciphertext).decode("utf-8")
+
+                     def decrypt(self, data):
+                         """Decrypt data.
+                @@ -44,5 +50,9 @@ class EncryptDecrypt(object):
+                         :param bytes data: Base64-encoded, encrypted data
+                         :returns: JSON-decoded, decrypted data
+                         """
+                -        plaintext = base64.b64decode(data).decode("utf-8")
+                +        ciphertext = base64.b64decode(data)
+                +        encryption_context = {self._message_type: self._type_order_inquiry}
+                +        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
+                +        plaintext = response["Plaintext"]
+                +
+                         return json.loads(plaintext)
 
 Extra credit
 ============

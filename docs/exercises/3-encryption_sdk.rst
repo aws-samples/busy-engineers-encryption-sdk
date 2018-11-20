@@ -32,6 +32,9 @@ This will give you a codebase that includes the base64 changes and direct
 KMS encryption from Exercises 1 and 2.
 Note that any uncommitted changes you've made already will be lost.
 
+The :ref:`Complete change` section is also available to help you view changes in context
+and compare your work.
+
 
 Exploring the guardrails of direct KMS
 ======================================
@@ -413,3 +416,185 @@ One caveat to note is that Encryption Context values can't be empty strings. To
 deal with this you can either use special values to indicate empty/``null``
 fields, only add the key if the field has a meaningful value, or require
 that the field be present.
+
+.. _Complete change:
+
+Complete change
+---------------
+
+View step-by-step changes in context, and compare your work if desired.
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        .. code:: diff
+
+            diff --git a/webapp/pom.xml b/webapp/pom.xml
+            index a565be8..643dd86 100644
+            --- a/webapp/pom.xml
+            +++ b/webapp/pom.xml
+            @@ -30,6 +30,12 @@
+                         <version>1.1.0</version>
+                     </dependency>
+
+            +        <dependency>
+            +            <groupId>com.amazonaws</groupId>
+            +            <artifactId>aws-encryption-sdk-java</artifactId>
+            +            <version>1.3.5</version>
+            +        </dependency>
+            +
+                     <dependency>
+                         <groupId>com.amazonaws</groupId>
+                         <artifactId>aws-java-sdk-sqs</artifactId>
+            diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            index 29b6f71..b544d59 100644
+            --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            @@ -27,6 +27,10 @@ import java.util.concurrent.TimeUnit;
+
+             import org.apache.log4j.Logger;
+
+            +import com.amazonaws.encryptionsdk.AwsCrypto;
+            +import com.amazonaws.encryptionsdk.CryptoResult;
+            +import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+            +import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
+             import com.amazonaws.services.kms.AWSKMS;
+             import com.amazonaws.services.kms.AWSKMSClient;
+             import com.amazonaws.services.kms.model.DecryptRequest;
+            @@ -46,9 +50,10 @@ public class EncryptDecrypt {
+                 private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
+                 private static final String K_MESSAGE_TYPE = "message type";
+                 private static final String TYPE_ORDER_INQUIRY = "order inquiry";
+            +    private static final String K_ORDER_ID = "order ID";
+
+                 private final AWSKMS kms;
+            -    private final String keyId;
+            +    private final KmsMasterKey masterKey;
+
+                 @SuppressWarnings("unused") // all fields are used via JSON deserialization
+                 private static class FormData {
+            @@ -61,7 +66,8 @@ public class EncryptDecrypt {
+                 @Inject
+                 public EncryptDecrypt(@Named("keyId") final String keyId) {
+                     kms = AWSKMSClient.builder().build();
+            -        this.keyId = keyId;
+            +        this.masterKey = new KmsMasterKeyProvider(keyId)
+            +            .getMasterKey(keyId);
+                 }
+
+                 public String encrypt(JsonNode data) throws IOException {
+            @@ -72,19 +78,13 @@ public class EncryptDecrypt {
+
+                     byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
+
+            -        EncryptRequest request = new EncryptRequest();
+            -        request.setKeyId(keyId);
+            -        request.setPlaintext(ByteBuffer.wrap(plaintext));
+            -
+                     HashMap<String, String> context = new HashMap<>();
+                     context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+            -        request.setEncryptionContext(context);
+            -
+            -        EncryptResult result = kms.encrypt(request);
+            +        if (formValues.orderid != null && formValues.orderid.length() > 0) {
+            +            context.put(K_ORDER_ID, formValues.orderid);
+            +        }
+
+            -        // Convert to byte array
+            -        byte[] ciphertext = new byte[result.getCiphertextBlob().remaining()];
+            -        result.getCiphertextBlob().get(ciphertext);
+            +        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+
+                     return Base64.getEncoder().encodeToString(ciphertext);
+                 }
+            @@ -92,19 +92,13 @@ public class EncryptDecrypt {
+                 public JsonNode decrypt(String ciphertext) throws IOException {
+                     byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+
+            -        DecryptRequest request = new DecryptRequest();
+            -        request.setCiphertextBlob(ByteBuffer.wrap(ciphertextBytes));
+            -
+            -        HashMap<String, String> context = new HashMap<>();
+            -        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+            -        request.setEncryptionContext(context);
+            -
+            -        DecryptResult result = kms.decrypt(request);
+            +        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+
+            -        // Convert to byte array
+            -        byte[] plaintext = new byte[result.getPlaintext().remaining()];
+            -        result.getPlaintext().get(plaintext);
+            +        // Check that we have the correct type
+            +        if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
+            +            throw new IllegalArgumentException("Bad message type in decrypted message");
+            +        }
+
+            -        return MAPPER.readTree(plaintext);
+            +        return MAPPER.readTree(result.getResult());
+                 }
+             }
+
+    .. group-tab:: Python
+
+        .. code:: diff
+
+            diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
+            index b7e8e07..f2cc5ec 100644
+            --- a/src/busy_engineers_workshop/encrypt_decrypt.py
+            +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
+            @@ -16,8 +16,9 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
+             """
+             import base64
+             import json
+            +import time
+
+            -import boto3
+            +import aws_encryption_sdk
+
+
+             class EncryptDecrypt(object):
+            @@ -28,8 +29,7 @@ class EncryptDecrypt(object):
+                     self._message_type = "message_type"
+                     self._type_order_inquiry = "order inquiry"
+                     self._timestamp = "rough timestamp"
+            -        self.key_id = key_id
+            -        self.kms = boto3.client("kms")
+            +        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+
+                 def encrypt(self, data):
+                     """Encrypt data.
+            @@ -38,10 +38,13 @@ class EncryptDecrypt(object):
+                     :returns: Base64-encoded, encrypted data
+                         :rtype: str
+                         """
+                -        encryption_context = {self._message_type: self._type_order_inquiry}
+                -        plaintext = json.dumps(data).encode("utf-8")
+                -        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
+                -        ciphertext = response["CiphertextBlob"]
+                +        encryption_context = {
+                +            self._message_type: self._type_order_inquiry,
+                +            self._timestamp: str(int(time.time() / 3600.0)),
+                +        }
+                +        ciphertext, _header = aws_encryption_sdk.encrypt(
+                +            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
+                +        )
+                         return base64.b64encode(ciphertext).decode("utf-8")
+
+                     def decrypt(self, data):
+                @@ -51,8 +54,12 @@ class EncryptDecrypt(object):
+                         :returns: JSON-decoded, decrypted data
+                         """
+                         ciphertext = base64.b64decode(data)
+                -        encryption_context = {self._message_type: self._type_order_inquiry}
+                -        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
+                -        plaintext = response["Plaintext"]
+                +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
+                +
+                +        try:
+                +            if header.encryption_context[self._message_type] != self._type_order_inquiry:
+                +                raise KeyError()  # overloading KeyError to use the same exit whether wrong or missing
+                +        except KeyError:
+                +            raise ValueError("Bad message type in decrypted message")
+
+                         return json.loads(plaintext)

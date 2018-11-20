@@ -38,6 +38,9 @@ first. If you haven't, you can use this git command to catch up:
 This will give you a codebase that already uses the AWS Encryption SDK.
 Note that any uncommitted changes you've made already will be lost.
 
+The :ref:`Complete change` section is also available to help you view changes in context
+and compare your work.
+
 How the caching feature works
 =============================
 
@@ -212,3 +215,143 @@ example, instead of putting the order ID in the audit log, we could put an
 This puts a timestamp, rounded down to the nearest hour, in the context. This
 provides us a certain degree of information about what data is being decrypted,
 without ruining the usefulness of the cache.
+
+.. _Complete change:
+
+Complete change
+---------------
+
+View step-by-step changes in context, and compare your work if desired.
+
+.. tabs::
+
+    .. group-tab:: Java
+
+        .. code:: diff
+
+            diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            index b544d59..1b75f06 100644
+            --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            @@ -19,7 +19,6 @@ import javax.inject.Inject;
+             import javax.inject.Named;
+             import javax.inject.Singleton;
+             import java.io.IOException;
+            -import java.nio.ByteBuffer;
+             import java.util.Base64;
+             import java.util.HashMap;
+             import java.util.Objects;
+            @@ -28,15 +27,14 @@ import java.util.concurrent.TimeUnit;
+             import org.apache.log4j.Logger;
+
+             import com.amazonaws.encryptionsdk.AwsCrypto;
+            +import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+             import com.amazonaws.encryptionsdk.CryptoResult;
+            +import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
+            +import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
+             import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+             import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
+             import com.amazonaws.services.kms.AWSKMS;
+             import com.amazonaws.services.kms.AWSKMSClient;
+            -import com.amazonaws.services.kms.model.DecryptRequest;
+            -import com.amazonaws.services.kms.model.DecryptResult;
+            -import com.amazonaws.services.kms.model.EncryptRequest;
+            -import com.amazonaws.services.kms.model.EncryptResult;
+             import com.fasterxml.jackson.databind.JsonNode;
+
+             /**
+            @@ -50,10 +48,10 @@ public class EncryptDecrypt {
+                 private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
+                 private static final String K_MESSAGE_TYPE = "message type";
+                 private static final String TYPE_ORDER_INQUIRY = "order inquiry";
+            -    private static final String K_ORDER_ID = "order ID";
+            +    private static final String K_TIMESTAMP = "rough timestamp";
+
+                 private final AWSKMS kms;
+            -    private final KmsMasterKey masterKey;
+            +    private final CryptoMaterialsManager materialsManager;
+
+                 @SuppressWarnings("unused") // all fields are used via JSON deserialization
+                 private static class FormData {
+            @@ -66,8 +64,16 @@ public class EncryptDecrypt {
+                 @Inject
+                 public EncryptDecrypt(@Named("keyId") final String keyId) {
+                     kms = AWSKMSClient.builder().build();
+            -        this.masterKey = new KmsMasterKeyProvider(keyId)
+            +        KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
+                         .getMasterKey(keyId);
+            +
+            +        LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
+            +        materialsManager = CachingCryptoMaterialsManager.newBuilder()
+            +            .withMaxAge(5, TimeUnit.MINUTES)
+            +            .withMasterKeyProvider(masterKey)
+            +            .withMessageUseLimit(10)
+            +            .withCache(cache)
+            +            .build();
+                 }
+
+                 public String encrypt(JsonNode data) throws IOException {
+            @@ -80,11 +86,10 @@ public class EncryptDecrypt {
+
+                     HashMap<String, String> context = new HashMap<>();
+                     context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
+            -        if (formValues.orderid != null && formValues.orderid.length() > 0) {
+            -            context.put(K_ORDER_ID, formValues.orderid);
+            -        }
+            +        // Round down to an hour
+            +        context.put(K_TIMESTAMP, "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
+
+            -        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+            +        byte[] ciphertext = new AwsCrypto().encryptData(materialsManager, plaintext, context).getResult();
+
+                     return Base64.getEncoder().encodeToString(ciphertext);
+                 }
+            @@ -92,7 +97,7 @@ public class EncryptDecrypt {
+                 public JsonNode decrypt(String ciphertext) throws IOException {
+                     byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+
+            -        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+            +        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(materialsManager, ciphertextBytes);
+
+                     // Check that we have the correct type
+                     if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
+
+    .. group-tab:: Python
+
+        .. code:: diff
+
+            diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
+            index f2cc5ec..a6d4743 100644
+            --- a/src/busy_engineers_workshop/encrypt_decrypt.py
+            +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
+            @@ -29,7 +29,11 @@ class EncryptDecrypt(object):
+                     self._message_type = "message_type"
+                     self._type_order_inquiry = "order inquiry"
+                     self._timestamp = "rough timestamp"
+            -        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            +        master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            +        cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
+            +        self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
+            +            cache=cache, master_key_provider=master_key_provider, max_age=5.0 * 60.0, max_messages_encrypted=10
+            +        )
+
+                 def encrypt(self, data):
+                     """Encrypt data.
+            @@ -43,7 +47,7 @@ class EncryptDecrypt(object):
+                         self._timestamp: str(int(time.time() / 3600.0)),
+                     }
+                     ciphertext, _header = aws_encryption_sdk.encrypt(
+            -            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
+            +            source=json.dumps(data), materials_manager=self.materials_manager, encryption_context=encryption_context
+                     )
+                     return base64.b64encode(ciphertext).decode("utf-8")
+
+            @@ -54,7 +58,7 @@ class EncryptDecrypt(object):
+                     :returns: JSON-decoded, decrypted data
+                         """
+                         ciphertext = base64.b64decode(data)
+                -        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
+                +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, materials_manager=self.materials_manager)
+
+                         try:
+                             if header.encryption_context[self._message_type] != self._type_order_inquiry:
