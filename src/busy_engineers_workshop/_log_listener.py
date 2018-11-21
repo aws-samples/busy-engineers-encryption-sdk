@@ -62,7 +62,7 @@ class KmsLogListener:
 
     @property
     def matching_entries(self) -> int:
-        """Matching log entries found since last reset."""
+        """Get matching log entries found since last reset."""
         return self._counter.matching_calls
 
     def reset_matching_entries(self) -> None:
