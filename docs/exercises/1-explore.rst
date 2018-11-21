@@ -196,7 +196,7 @@ Here and throughout the workshop, we will provide detailed steps for you to expl
 on your own.
 
 If you would rather see all the required changes at once, or if you would like to check your work, jump to the
-:ref:`Complete change` section at the end of each exercise.
+:ref:`complete change<ex1-change>` section at the end of each exercise.
 
 .. tabs::
 
@@ -275,7 +275,8 @@ After you've made the changes, use the appropriate :ref:`Build tool commands` to
 and receiving a sample message. Now, when you use the **Ciphertext** radio button on the **Receive data** tab, you
 should see the Base64-encoded message.
 
-.. _Complete change:
+
+.. _ex1-change:
 
 Complete change
 ---------------
