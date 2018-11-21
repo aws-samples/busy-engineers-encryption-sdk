@@ -32,7 +32,7 @@ This will give you a codebase that includes the base64 changes and direct
 KMS encryption from Exercises 1 and 2.
 Note that any uncommitted changes you've made already will be lost.
 
-The :ref:`Complete change` section is also available to help you view changes in context
+The :ref:`complete change<ex3-change>` is also available to help you view changes in context
 and compare your work.
 
 
@@ -417,7 +417,7 @@ deal with this you can either use special values to indicate empty/``null``
 fields, only add the key if the field has a meaningful value, or require
 that the field be present.
 
-.. _Complete change:
+.. _ex3-change:
 
 Complete change
 ---------------

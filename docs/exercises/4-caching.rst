@@ -38,7 +38,7 @@ first. If you haven't, you can use this git command to catch up:
 This will give you a codebase that already uses the AWS Encryption SDK.
 Note that any uncommitted changes you've made already will be lost.
 
-The :ref:`Complete change` section is also available to help you view changes in context
+The :ref:`complete change<ex4-change>` is also available to help you view changes in context
 and compare your work.
 
 How the caching feature works
@@ -216,7 +216,8 @@ This puts a timestamp, rounded down to the nearest hour, in the context. This
 provides us a certain degree of information about what data is being decrypted,
 without ruining the usefulness of the cache.
 
-.. _Complete change:
+
+.. _ex4-change:
 
 Complete change
 ---------------

@@ -6,7 +6,7 @@ A Busy Engineer's Guide to the AWS Encryption SDK
 #################################################
 
 In this workshop, you will add encryption and decryption features to a simple web application that
-sends form data over Amazon SQS.
+sends form data over `Amazon SQS`_.
 
 First, you will enable encryption by calling KMS directly. Second, you will change your code to 
 use the AWS Encryption SDK to call KMS. Third, you will add data key caching to reduce calls to KMS. 
@@ -26,10 +26,9 @@ verifying the identity of an encrypted message, and as a condition for grants an
 Getting started
 ***************
 
-Instructions on how to set up the example application can be
-found in :ref:`Environment Setup`.
+For help setting up an environment to work through the exercises, see :ref:`Environment Setup`.
 
-When you are done with your experimentation, instructions to clean up the application are found in :ref:`Cleaning up`.
+When you are done experimenting, you can find instructions for cleaning up the application in :ref:`Cleaning up`.
 
 List of exercises
 *****************
@@ -39,20 +38,19 @@ List of exercises
 * :ref:`Exercise 3` - Add encryption using the AWS Encryption SDK
 * :ref:`Exercise 4` - Add caching to the example application
 
-Additional exploration
-**********************
+Bonus Tasks
+***********
 
-If you find yourself wanting more after these exercises, here are some ideas you can explore:
+If you want more challenging tasks, try these ideas:
 
-* Try downloading the `AWS Encryption SDK CLI`_ and using it to decrypt some of your messages.
+* Downloading the `AWS Encryption SDK CLI`_ and using it to decrypt some of your messages.
 
-* The AWS Encryption SDK supports encrypting to multiple recipients. Try encrypting to two KMS
-  keys in different regions, and make sure you can decrypt using each independently.
+* The AWS Encryption SDK supports encrypting the same message with multiple keys. Try encrypting with two KMS
+  keys in different regions. Make sure you can decrypt in each region independently.
 
-* You can write your own crypto materials manager to transform the incoming request. Try adding
-  one that adds additional audit information (say, a timestamp) to the encryption context. If you
-  place this after the cache you can avoid some of the issues you'll otherwise encounter with
-  fine timestamps with caching.
+* Write your own `Cryptographic Materials Manager`_ (CMM) to transform the incoming request. For example, write one
+  that adds a timestamp to the encryption context. Using the material introduced in Exercise 4, experiment with how the
+  timestamp affects caching behavior and performance.
 
 License information
 *******************
@@ -70,3 +68,5 @@ and limitations under the License.
 
 
 .. _AWS Encryption SDK CLI: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/crypto-cli.html
+.. _Amazon SQS: https://aws.amazon.com/sqs/
+.. _Cryptographic Materials Manager: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager

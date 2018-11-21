@@ -6,7 +6,7 @@ Exercise 1: Explore
 *******************
 
 We've prepared a simple example application. We'll use this application to explore different ways
-to encrypt data. Before we dive in, you will need to set up your environment.
+to encrypt data. To get started, you'll need an environment like the one described in :ref:`Environment Setup`.
 
 Check out the first application branch for the language of your choice:
 
@@ -64,7 +64,7 @@ the example application.
             tox -e deploy-remote-build -- {HOSTNAME} {SSH KEY FILE}
 
 Our build tools automatically build the Lambda, use AWS CloudFormation to deploy AWS resources, and
-uploads the built application as a Lambda function. The initial deployment typically takes 3-5
+upload the built application as a Lambda function. The initial deployment typically takes 3-5
 minutes to complete. You can monitor the progress of the deployment on the `CloudFormation console
 <https://us-east-2.console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks?filter=active>`_.
 
@@ -89,9 +89,7 @@ To go to the sample application, open the URL in the output.
 
 .. warning::
 
-    This simple demo application does not authenticate its users. Anyone who accesses the application
-    endpoint can see your data in plaintext on the **Receive data** tab. Do not enter real data in this
-    application.
+    Do not enter real data in this application. This simple demo application does not authenticate its users. Anyone who accesses the application endpoint can see your data in plaintext on the Receive Data tab.
 
 .. _Updating the example application:
 
@@ -99,8 +97,7 @@ Updating the example application
 ================================
 
 Whenever you change the application, you can use the appropriate :ref:`Build tool commands` to deploy
-the updates. The deployment scripts will handle changes to the code, HTML, and CloudFormation templates
-automatically.
+the updates. The deployment scripts automatically process all changes to the code, HTML, and CloudFormation templates.
 
 Cleaning up
 -----------
@@ -199,7 +196,7 @@ Here and throughout the workshop, we will provide detailed steps for you to expl
 on your own.
 
 If you would rather see all the required changes at once, or if you would like to check your work, jump to the
-:ref:`Complete change` section at the end of each exercise.
+:ref:`complete change<ex1-change>` section at the end of each exercise.
 
 .. tabs::
 
@@ -277,6 +274,9 @@ If you would rather see all the required changes at once, or if you would like t
 After you've made the changes, use the appropriate :ref:`Build tool commands` to deploy them. Then try sending
 and receiving a sample message. Now, when you use the **Ciphertext** radio button on the **Receive data** tab, you
 should see the Base64-encoded message.
+
+
+.. _ex1-change:
 
 Complete change
 ---------------

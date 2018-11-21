@@ -13,8 +13,7 @@ Here are instructions to prepare your environment to run the workshop.
 
     .. group-tab:: Cloud9
 
-        We have created CloudFormation templates that will set up a Cloud9 workspace that has the necessary prerequisites installed
-        and uses a role with the necessary permissions.
+        We have provided CloudFormation templates that creates a Cloud9 workspace with all of the prerequisites, including a role with the required permissions.
 
         The setup is split across two stacks: the Initial Stack, for basic resources, and the Cloud9 stack, for an IDE.
 
@@ -127,7 +126,7 @@ Here are instructions to prepare your environment to run the workshop.
         <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#how-to-generate-your-own-key-and-import-it-to-aws>`_
         using the instructions at those links.
 
-        Once you have the key pair set up, we can launch an instance.
+        After you have the key pair set up, we can launch an instance.
 
         #. Click the blue 'Launch Instance' button.
         #. Select the 'Amazon Linux AMI 2018.03.0 (HVM), SSD Volume Type' AMI.
@@ -138,7 +137,7 @@ Here are instructions to prepare your environment to run the workshop.
         #. In the provided dialog, select the keypair you just created or imported.
         #. Click 'Launch Instances'.
 
-        Once the instance launches, you'll see it in the `instance list
+        After the instance launches, you'll see it in the `instance list
         <https://us-east-2.console.aws.amazon.com/ec2/v2/home?region=us-east-2#Instances>`_.
 
         Copy the public DNS hostname. You can then log into this instance using
@@ -163,7 +162,7 @@ Prerequisites Installation
 
             <a href="https://us-east-2.console.aws.amazon.com/cloud9/home?region=us-east-2" target="_blank">Cloud9 IDE</a>
 
-        Once you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
+        After you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
 
         You will be prompted to choose the default version of Java during the install process. Choose Java 1.8.x.
 
@@ -186,7 +185,7 @@ Prerequisites Installation
 
             <a href="https://us-east-2.console.aws.amazon.com/cloud9/home?region=us-east-2" target="_blank">Cloud9 IDE</a>
 
-        Once you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
+        After you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
 
         .. code-block:: bash
 
@@ -202,7 +201,7 @@ Prerequisites Installation
 
     .. group-tab:: Manual (Java)
 
-        Once you're logged in, use ``yum`` to upgrade Java and install git:
+        After you're logged in, use ``yum`` to upgrade Java and install git:
 
         .. code-block:: bash
 
@@ -247,7 +246,7 @@ Prerequisites Installation
 
         Make sure the two hashes match before proceeding.
 
-        Once you've verified the integrity of maven, we'll need to unpack it and add it to our path:
+        After you've verified the integrity of maven, we'll need to unpack it and add it to our path:
 
         .. code-block:: bash
 

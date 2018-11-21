@@ -36,7 +36,7 @@ Note that any uncommitted changes you've made already will be lost.
 If you haven't done Exercise 1 at all, we encourage you to go through the
 preparation and deployment steps in there at a minimum.
 
-The :ref:`Complete change` section is also available to help you view changes in context
+The :ref:`complete change<ex2-change>` is also available to help you view changes in context
 and compare your work.
 
 Using KMS directly
@@ -334,7 +334,7 @@ Once you've used the :ref:`Build tool commands` to deploy this code and sent and
 received data with it, about 10 minutes later the CloudTrail logs should show
 entries with the new Encryption Context fields.
 
-.. _Complete change:
+.. _ex2-change:
 
 Complete change
 ---------------
