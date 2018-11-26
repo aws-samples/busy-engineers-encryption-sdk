@@ -45,10 +45,10 @@ How the caching feature works
 =============================
 
 You enable the caching feature of the AWS Encryption SDK by creating a
-"`caching crypto materials manager
+"`caching Crypto Materials Manager
 <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/implement-caching.html>`_"
 and using it instead of your Master Key in encrypt and decrypt operations.
-Crypto materials managers are plugins that can manipulate encrypt and decrypt
+Crypto Materials Managers are plugins that can manipulate encrypt and decrypt
 requests in certain ways.
 
 When caching is enabled, the Encryption SDK generates a Data Key the first time
@@ -94,7 +94,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         It's important to make this a field instead of initializing it for each call,
         as we need the cache to persist from one call to the next.
 
-        In our constructor, we'll set up our Master Key, cache, and caching materials manager:
+        In our constructor, we'll set up our Master Key, cache, and Caching Materials Manager:
 
         .. code-block:: java
            :lineno-start: 67
@@ -112,7 +112,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
 
     .. group-tab:: Python
 
-        We'll set up the Master Key Provider, cache, and caching materials manager in our ``__init__``:
+        We'll set up the Master Key Provider, cache, and Caching Materials Manager in our ``__init__``:
 
         .. code-block:: python
            :lineno-start: 32
