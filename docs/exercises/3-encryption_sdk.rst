@@ -166,7 +166,7 @@ a fair amount of boilerplate - in particular, all those byte buffer
 conversions. It's also difficult to put any kind of dynamic data in
 the Encryption Context, as you need to find a separate place to store
 those context values. We'll resolve all of these by converting things
-to use the encryption SDK instead.
+to use the AWS Encryption SDK instead.
 
 Overview of exercise
 ====================
@@ -179,7 +179,7 @@ In this exercise we'll:
 Step by step
 ------------
 
-First, let's make sure the encryption SDK is set up as a dependency correctly.
+First, let's make sure the Encryption SDK is set up as a dependency correctly.
 
 
 .. tabs::
@@ -236,14 +236,14 @@ we won't need to keep around the key ID, so we can discard that value.
     .. group-tab:: Java
 
         We won't need the class attribute for ``keyID``, so replace that with ``masterKey``
-        for the KMS master key.
+        for the KMS Master Key.
 
         .. code-block:: java
            :lineno-start: 56
 
             private final KmsMasterKey masterKey;
 
-        In our constructor, we'll create the master key like so:
+        In our constructor, we'll create the Master Key like so:
 
         .. code-block:: java
            :lineno-start: 69
@@ -307,7 +307,7 @@ Encryption Context mostly the same, and the body of encrypt can just be:
                 return base64.b64encode(ciphertext).decode("utf-8")
 
 For decrypt, we no longer need to construct an Encryption Context because the
-Encryption SDK records the original context for us. However, this means we now
+AWS Encryption SDK records the original context for us. However, this means we now
 need to check that the context is consistent with what we expected.
 Decrypt therefore ends up looking like:
 
@@ -372,11 +372,11 @@ now.
 Master Keys and Master Key Providers
 ====================================
 
-Within the AWS Encryption SDK, your data is protected by data keys, but those data keys must also be protected.
+Within the AWS Encryption SDK, your data is protected by Data Keys, but those Data Keys must also be protected.
 `Master Keys`_ and `Master Key Providers`_ are objects that allow you to control how the AWS Encryption SDK
-protects your data keys.
+protects your Data Keys.
 
-Master Keys are used by the AWS Encryption SDK client to generate and manage data keys.
+Master Keys are used by the AWS Encryption SDK client to generate and manage Data Keys.
 
 Master Key Providers supply Master Keys to the client.
 
@@ -389,7 +389,7 @@ You can provide either a Master Key or a Master Key Provider to the client, and 
 Adding additional audit metadata to your Encryption Context
 ===========================================================
 
-Now that you're using the encryption SDK, it's a lot easier to put
+Now that you're using the AWS Encryption SDK, it's a lot easier to put
 dynamically-changing data in the Encryption Context. For example, we can record
 the order ID just by doing:
 
