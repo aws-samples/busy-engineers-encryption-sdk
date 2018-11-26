@@ -8,10 +8,10 @@ A Busy Engineer's Guide to the AWS Encryption SDK
 In this workshop, you will add encryption and decryption features to a simple web application that
 sends form data over `Amazon SQS`_.
 
-First, you will enable encryption by calling KMS directly. Second, you will change your code to 
-use the AWS Encryption SDK to call KMS. Third, you will add data key caching to reduce calls to KMS. 
-Fourth, you will add an encryption context; non-secret data that you can use for tracking and auditing, 
-verifying the identity of an encrypted message, and as a condition for grants and policies.
+First, you will set up a work environment for this workshop. Then you will start adding functionality to the application.
+This functionality will include basic changes to enable encrypting and decrypting arbitrary data; using KMS directly
+for encryption and decryption; and using the AWS Encryption SDK. We will also walk you through using features
+such as `Encryption Context`_ and Data Key Caching.
 
 .. toctree::
     :maxdepth: 1
@@ -52,13 +52,13 @@ If you want more challenging tasks, try these ideas:
   keys in different regions. Make sure you can decrypt in each region independently.
 
 * Write your own `Cryptographic Materials Manager`_ (CMM) to transform the incoming request. For example, write one
-  that adds a timestamp to the encryption context. Using the material introduced in Exercise 4, experiment with how the
+  that adds a timestamp to the Encryption Context. Using the material introduced in Exercise 4, experiment with how the
   timestamp affects caching behavior and performance.
 
 License information
 *******************
 
-Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
 the License. A copy of the License is located at
@@ -73,3 +73,4 @@ and limitations under the License.
 .. _AWS Encryption SDK CLI: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/crypto-cli.html
 .. _Amazon SQS: https://aws.amazon.com/sqs/
 .. _Cryptographic Materials Manager: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager
+.. _Encryption Context: https://docs.aws.amazon.com/kms/latest/developerguide/encryption-context.html

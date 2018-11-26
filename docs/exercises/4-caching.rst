@@ -45,15 +45,15 @@ How the caching feature works
 =============================
 
 You enable the caching feature of the AWS Encryption SDK by creating a
-"`caching crypto materials manager
+"`caching Crypto Materials Manager
 <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/implement-caching.html>`_"
-and using it instead of your master key in encrypt and decrypt operations.
-Crypto materials managers are plugins that can manipulate encrypt and decrypt
+and using it instead of your Master Key in encrypt and decrypt operations.
+Crypto Materials Managers are plugins that can manipulate encrypt and decrypt
 requests in certain ways.
 
-When caching is enabled, the Encryption SDK generates a data key the first time
+When caching is enabled, the Encryption SDK generates a Data Key the first time
 encrypt is invoked, then re-uses it for subsequent messages. On decrypt, we
-conversely remember the mapping from encrypted data key to decrypted data key,
+conversely remember the mapping from encrypted Data Key to decrypted Data Key,
 and reuse that as well.
 
 The code changes for this are fairly small, so let's jump right into it.
@@ -94,7 +94,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         It's important to make this a field instead of initializing it for each call,
         as we need the cache to persist from one call to the next.
 
-        In our constructor, we'll set up our master key, cache, and caching materials manager:
+        In our constructor, we'll set up our Master Key, cache, and Caching Materials Manager:
 
         .. code-block:: java
            :lineno-start: 67
@@ -112,7 +112,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
 
     .. group-tab:: Python
 
-        We'll set up the master key provider, cache, and caching materials manager in our ``__init__``:
+        We'll set up the Master Key Provider, cache, and Caching Materials Manager in our ``__init__``:
 
         .. code-block:: python
            :lineno-start: 32
@@ -179,11 +179,11 @@ Encryption context issues
 =========================
 
 If you followed the previous exercise to the end, you'll remember we added the
-order ID to the encryption context. If not, now's a good time to add it.
+order ID to the Encryption Context. If not, now's a good time to add it.
 
 Try sending a few messages in a row with different order IDs. You'll note that
 the cache doesn't work in this case; this is because messages with different
-encryption contexts cannot use the same cached result.
+Encryption Contexts cannot use the same cached result.
 
 This illustrates the balance that needs to be struck between cache performance,
 access control verification, and audit log verbosity: improving cache performance
