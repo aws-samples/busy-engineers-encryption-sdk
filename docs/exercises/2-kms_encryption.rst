@@ -210,12 +210,11 @@ it in a field for later reference.
 
             import boto3
 
-        We'll need to add handlers to our ``__init__`` to collect the key ID and create the KMS client.
+        We'll need to add handlers to our ``__init__`` to create the KMS client.
 
         .. code-block:: python
            :lineno-start: 30
 
-            self.key_id = key_id
             self.kms = boto3.client("kms")
 
         In ``encrypt()`` we'll then call KMS and process the response.
