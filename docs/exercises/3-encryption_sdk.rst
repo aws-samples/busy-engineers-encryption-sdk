@@ -226,10 +226,10 @@ Now, let's add some imports:
 
             import aws_encryption_sdk
 
-The first step to using the Encryption SDK is setting up a master key (or
-master key provider) to decide which keys will be used for the encryption.
-Once we set up our master key, we won't need to keep around the key ID,
-so we can discard that value.
+:ref:`master-keys` are used by the AWS Encryption SDK
+to protect your data. The first step to using the Encryption SDK is setting up
+a Master Key or Master Key Provider. Once we set up our Master Key,
+we won't need to keep around the key ID, so we can discard that value.
 
 .. tabs::
 
@@ -366,6 +366,25 @@ now.
     message size limits related to our use of SQS as well. If handling very large
     messages was needed for your application, you might want to consider putting
     the message in S3, and sending a reference to it via SQS.
+
+.. _master-keys:
+
+Master Keys and Master Key Providers
+====================================
+
+Within the AWS Encryption SDK, your data is protected by data keys, but those data keys must also be protected.
+`Master Keys`_ and `Master Key Providers`_ are objects that allow you to control how the AWS Encryption SDK
+protects your data keys.
+
+Master Keys are used by the AWS Encryption SDK client to generate and manage data keys.
+
+Master Key Providers supply Master Keys to the client.
+
+You can provide either a Master Key or a Master Key Provider to the client, and the client will handle obtaining the Master Key it requires.
+
+
+.. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
+.. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-operations
 
 Adding additional audit metadata to your Encryption Context
 ===========================================================
