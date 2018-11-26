@@ -46,6 +46,12 @@ the example application.
 
     .. group-tab:: Python
 
+        To do a basic sanity check (syntax, imports, general style) before deploying:
+
+        .. code-block:: bash
+
+            tox -e flake8
+
         To build locally and deploy, including any updates:
 
         .. code-block:: bash
