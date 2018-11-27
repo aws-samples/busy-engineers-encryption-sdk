@@ -38,10 +38,10 @@ class EncryptDecrypt(object):
         :returns: Base64-encoded, encrypted data
         :rtype: str
         """
-        encryption_context = {
-            self._message_type: self._type_order_inquiry,
-            self._order_id: data["orderid"],
-        }
+        encryption_context = {self._message_type: self._type_order_inquiry}
+        order_id = data.get("orderid", "")
+        if order_id:
+            encryption_context[self._order_id] = order_id
         ciphertext, _header = aws_encryption_sdk.encrypt(
             source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
         )
