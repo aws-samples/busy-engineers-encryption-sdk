@@ -17,21 +17,23 @@ KMS calls in the application to understand how the key is being used.
 
 Note that these filters will show all matching events, including for any other KMS keys in your account that are not
 being used in this workshop. If you want to scope it down to just the workshop's ARN,
-add an additional constraint, such as ``&& $.resources[0].ARN = "arn:aws:kms:us-east-2:<account>:key/<key>"`` (be sure
-to replace the placeholder values with your real ones).
+add an additional constraint like the example KMS CMK constraint specified below.
 
-|event_list|
+|cloudwatch_logs|
 
-.. |event_list| raw:: html
+.. |cloudwatch_logs| raw:: html
 
-    <ul>
-        <li><a href="https://us-east-2.console.aws.amazon.com/cloudwatch/home?region=us-east-2#logEventViewer:group=busy-engineers-workshop-python-CloudtrailLogGroup-O12HRPYVSK6Y;filter=%257B%2520%2524.eventName%2520%253D%2520%2522GenerateDataKey%2522%2520%257D"
-        target="_blank">Filter for GenerateDataKey events.</a></li>
-        <li><a href="https://us-east-2.console.aws.amazon.com/cloudwatch/home?region=us-east-2#logEventViewer:group=busy-engineers-workshop-python-CloudtrailLogGroup-O12HRPYVSK6Y;filter=%257B%2520%2524.eventName%2520%253D%2520%2522Encrypt%2522%2520%257D"
-        target="_blank">Filter for Encrypt events.</a></li>
-        <li><a href="https://us-east-2.console.aws.amazon.com/cloudwatch/home?region=us-east-2#logEventViewer:group=busy-engineers-workshop-python-CloudtrailLogGroup-O12HRPYVSK6Y;filter=%257B%2520%2524.eventName%2520%253D%2520%2522Decrypt%2522%2520%257D"
-        target="_blank">Filter for Decrypt events.</a></li>
-    </ul>
+    <a href="https://us-east-2.console.aws.amazon.com/cloudwatch/home?region=us-east-2#logs:"
+    target="_blank">Open the CloudWatch Logs console.</a>
+
+
+* Filter for ``GenerateDataKey`` events: ``{ $.eventName = "GenerateDataKey" }``
+* Filter for ``Encrypt`` events: ``{ $.eventName = "Encrypt" }``
+* Filter for ``Decrypt`` events: ``{ $.eventName = "Decrypt" }``
+* Filter for events for a specific KMS CMK: ``{ $.resources[0].ARN = "arn:aws:kms:us-east-2:<account>:key/<key>" }``
+    * Be sure to substitute the identifiers for account and key appropriately
+* Tip: use boolean operators ``&&`` and ``||`` to combine clauses
+
 
 Lambda Logs
 ===========
