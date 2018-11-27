@@ -397,29 +397,39 @@ the order ID just by doing:
 
     .. group-tab:: Java
 
-        .. code-block:: java
-           :lineno-start: 82
+        Let's define a constant for the Order ID key:
 
-            context.put("order ID", formValues.orderid);
+        .. code-block:: java
+           :lineno-start: 53
+
+            private static final String K_ORDER_ID = "order ID";
+
+        And then add a new Encryption Context value for that key, when it is defined:
+
+        .. code-block:: java
+           :lineno-start: 83
+
+            if (formValues.orderid != null && formValues.orderid.length() > 0) {
+                context.put(K_ORDER_ID, formValues.orderid);
+            }
 
     .. group-tab:: Python
 
-        First, import ``time``.
+        Let's define the Order ID key:
 
         .. code-block:: python
-           :lineno-start: 19
+           :lineno-start: 31
 
-            import time
+            self._order_id = "order ID"
 
         Now add the additional metadata.
 
         .. code-block:: python
            :lineno-start: 41
 
-            encryption_context = {
-                self._message_type: self._type_order_inquiry,
-                self._timestamp: str(int(time.time() / 3600.0)),
-            }
+            order_id = data.get("orderid", "")
+            if order_id:
+                encryption_context[self._order_id] = order_id
 
 No changes are needed in decrypt. The AWS Encryption SDK stores Encryption Context
 for you on the message format it produces so that it is available to provide to
@@ -559,42 +569,39 @@ View step-by-step changes in context, and compare your work if desired.
         .. code:: diff
 
             diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
-            index b7e8e07..f2cc5ec 100644
+            index b7e8e07..b1cef27 100644
             --- a/src/busy_engineers_workshop/encrypt_decrypt.py
             +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
-            @@ -16,8 +16,9 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
-             """
+            @@ -17,7 +17,7 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
              import base64
              import json
-            +import time
 
             -import boto3
             +import aws_encryption_sdk
 
 
              class EncryptDecrypt(object):
-            @@ -28,8 +29,7 @@ class EncryptDecrypt(object):
+            @@ -28,8 +28,8 @@ class EncryptDecrypt(object):
                      self._message_type = "message_type"
                      self._type_order_inquiry = "order inquiry"
                      self._timestamp = "rough timestamp"
             -        self.key_id = key_id
             -        self.kms = boto3.client("kms")
+            +        self._order_id = "order ID"
             +        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
 
                  def encrypt(self, data):
                      """Encrypt data.
-            @@ -38,10 +38,13 @@ class EncryptDecrypt(object):
-                     :returns: Base64-encoded, encrypted data
-                         :rtype: str
+            @@ -39,9 +39,12 @@ class EncryptDecrypt(object):
+                     :rtype: str
                          """
-                -        encryption_context = {self._message_type: self._type_order_inquiry}
+                         encryption_context = {self._message_type: self._type_order_inquiry}
                 -        plaintext = json.dumps(data).encode("utf-8")
                 -        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
                 -        ciphertext = response["CiphertextBlob"]
-                +        encryption_context = {
-                +            self._message_type: self._type_order_inquiry,
-                +            self._timestamp: str(int(time.time() / 3600.0)),
-                +        }
+                +        order_id = data.get("orderid", "")
+                +        if order_id:
+                +            encryption_context[self._order_id] = order_id
                 +        ciphertext, _header = aws_encryption_sdk.encrypt(
                 +            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
                 +        )
@@ -617,3 +624,5 @@ View step-by-step changes in context, and compare your work if desired.
                 +            raise ValueError("Bad message type in decrypted message")
 
                          return json.loads(plaintext)
+
+

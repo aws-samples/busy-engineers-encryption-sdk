@@ -77,7 +77,10 @@ First, we'll add the new imports we'll need:
 
     .. group-tab:: Python
 
-        We already have all the imports we need. :)
+        .. code-block:: python
+           :lineno-start: 19
+
+            import time
 
 
 Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
@@ -115,7 +118,7 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         We'll set up the Master Key Provider, cache, and Caching Materials Manager in our ``__init__``:
 
         .. code-block:: python
-           :lineno-start: 32
+           :lineno-start: 33
 
             master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
             cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
@@ -153,7 +156,7 @@ encrypt and decrypt operations:
         In your ``encrypt`` function, change how you compute ``ciphertext``:
 
         .. code-block:: python
-           :lineno-start: 49
+           :lineno-start: 50
 
             ciphertext, _header = aws_encryption_sdk.encrypt(
                 source=json.dumps(data),
@@ -164,7 +167,7 @@ encrypt and decrypt operations:
         And in ``decrypt``, change how you compute ``plaintext``:
 
         .. code-block:: python
-           :lineno-start: 61
+           :lineno-start: 62
 
             plaintext, header = aws_encryption_sdk.decrypt(
                 source=ciphertext,
@@ -175,7 +178,7 @@ Once you finish the changes, use the appropriate :ref:`Build tool commands` to
 deploy and try sending a few messages in a row. You'll see that only one message
 out of ten result in a KMS call, for both send and receive.
 
-Encryption context issues
+Encryption Context issues
 =========================
 
 If you followed the previous exercise to the end, you'll remember we added the
@@ -197,12 +200,23 @@ example, instead of putting the order ID in the audit log, we could put an
 
     .. group-tab:: Java
 
+        Let's define a constant for the timestamp key:
+
+        .. code-block:: java
+           :lineno-start: 51
+
+            private static final String K_TIMESTAMP = "rough timestamp";
+
+        And put it in Encryption Context:
+
         .. code-block:: java
            :lineno-start: 90
 
-            context.put("approximate timestamp", "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
+            context.put(K_TIMESTAMP + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
 
     .. group-tab:: Python
+
+        The ``_timestamp`` key is already defined. Let's put it in Encryption Context:
 
         .. code-block:: python
            :lineno-start: 45
@@ -322,13 +336,21 @@ View step-by-step changes in context, and compare your work if desired.
         .. code:: diff
 
             diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
-            index f2cc5ec..a6d4743 100644
+            index b1cef27..0609bc6 100644
             --- a/src/busy_engineers_workshop/encrypt_decrypt.py
             +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
-            @@ -29,7 +29,11 @@ class EncryptDecrypt(object):
-                     self._message_type = "message_type"
+            @@ -16,6 +16,7 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
+             """
+             import base64
+             import json
+            +import time
+
+             import aws_encryption_sdk
+
+            @@ -29,7 +30,11 @@ class EncryptDecrypt(object):
                      self._type_order_inquiry = "order inquiry"
                      self._timestamp = "rough timestamp"
+                     self._order_id = "order ID"
             -        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
             +        master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
             +        cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
@@ -338,17 +360,26 @@ View step-by-step changes in context, and compare your work if desired.
 
                  def encrypt(self, data):
                      """Encrypt data.
-            @@ -43,7 +47,7 @@ class EncryptDecrypt(object):
-                         self._timestamp: str(int(time.time() / 3600.0)),
-                     }
-                     ciphertext, _header = aws_encryption_sdk.encrypt(
-            -            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
-            +            source=json.dumps(data), materials_manager=self.materials_manager, encryption_context=encryption_context
-                     )
-                     return base64.b64encode(ciphertext).decode("utf-8")
+            @@ -38,12 +43,12 @@ class EncryptDecrypt(object):
+                     :returns: Base64-encoded, encrypted data
+                         :rtype: str
+                         """
+                -        encryption_context = {self._message_type: self._type_order_inquiry}
+                -        order_id = data.get("orderid", "")
+                -        if order_id:
+                -            encryption_context[self._order_id] = order_id
+                +        encryption_context = {
+                +            self._message_type: self._type_order_inquiry,
+                +            self._timestamp: str(int(time.time() / 3600.0)),
+                +        }
+                         ciphertext, _header = aws_encryption_sdk.encrypt(
+                -            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
+                +            source=json.dumps(data), materials_manager=self.materials_manager, encryption_context=encryption_context
+                         )
+                         return base64.b64encode(ciphertext).decode("utf-8")
 
-            @@ -54,7 +58,7 @@ class EncryptDecrypt(object):
-                     :returns: JSON-decoded, decrypted data
+                @@ -54,7 +59,7 @@ class EncryptDecrypt(object):
+                         :returns: JSON-decoded, decrypted data
                          """
                          ciphertext = base64.b64decode(data)
                 -        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
@@ -356,3 +387,6 @@ View step-by-step changes in context, and compare your work if desired.
 
                          try:
                              if header.encryption_context[self._message_type] != self._type_order_inquiry:
+
+
+
