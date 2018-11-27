@@ -16,7 +16,6 @@ This is the only module that you need to modify in the Busy Engineer's Guide to 
 """
 import base64
 import json
-import time
 
 import aws_encryption_sdk
 
@@ -29,6 +28,7 @@ class EncryptDecrypt(object):
         self._message_type = "message_type"
         self._type_order_inquiry = "order inquiry"
         self._timestamp = "rough timestamp"
+        self._order_id = "order ID"
         self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
 
     def encrypt(self, data):
@@ -40,7 +40,7 @@ class EncryptDecrypt(object):
         """
         encryption_context = {
             self._message_type: self._type_order_inquiry,
-            self._timestamp: str(int(time.time() / 3600.0)),
+            self._order_id: data["orderid"],
         }
         ciphertext, _header = aws_encryption_sdk.encrypt(
             source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
