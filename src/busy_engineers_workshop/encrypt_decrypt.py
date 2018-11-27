@@ -16,6 +16,7 @@ This is the only module that you need to modify in the Busy Engineer's Guide to 
 """
 import base64
 import json
+import time
 
 import aws_encryption_sdk
 
@@ -44,7 +45,7 @@ class EncryptDecrypt(object):
         """
         encryption_context = {
             self._message_type: self._type_order_inquiry,
-            self._order_id: data["orderid"],
+            self._timestamp: str(int(time.time() / 3600.0)),
         }
         ciphertext, _header = aws_encryption_sdk.encrypt(
             source=json.dumps(data), materials_manager=self.materials_manager, encryption_context=encryption_context
