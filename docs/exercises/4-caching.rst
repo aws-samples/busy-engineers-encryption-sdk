@@ -212,7 +212,7 @@ example, instead of putting the order ID in the audit log, we could put an
         .. code-block:: java
            :lineno-start: 90
 
-            context.put(K_TIMESTAMP + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
+            context.put(K_TIMESTAMP, "" + (System.currentTimeMillis() / 3_600_000) * 3_600_000);
 
     .. group-tab:: Python
 

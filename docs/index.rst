@@ -55,6 +55,11 @@ If you want more challenging tasks, try these ideas:
   that adds a timestamp to the Encryption Context. Using the material introduced in Exercise 4, experiment with how the
   timestamp affects caching behavior and performance.
 
+Source Code
+***********
+
+The source code for the workshop and the documentation is `available on GitHub`_.
+
 License information
 *******************
 
@@ -74,3 +79,4 @@ and limitations under the License.
 .. _Amazon SQS: https://aws.amazon.com/sqs/
 .. _Cryptographic Materials Manager: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager
 .. _Encryption Context: https://docs.aws.amazon.com/kms/latest/developerguide/encryption-context.html
+.. _available on GitHub: https://github.com/aws-samples/busy-engineers-encryption-sdk
