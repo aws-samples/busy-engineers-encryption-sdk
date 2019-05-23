@@ -174,7 +174,7 @@ Resources:
       Handler: index.redirect
       MemorySize: 128
       Role: !GetAtt LambdaRole.Arn
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
       Timeout: 5
   RedirectPermissions:
     Type: 'AWS::Lambda::Permission'
