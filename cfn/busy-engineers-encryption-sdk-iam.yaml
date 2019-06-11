@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: The Busy Engineer's Guide to the Encryption SDK IAM Roles
 
 Resources:
-  #--------------------------------------------------------------------------------
+ #--------------------------------------------------------------------------------
  ## Main backend application lambda function configuration
   LambdaRole:
     Type: 'AWS::IAM::Role'
