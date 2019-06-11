@@ -154,7 +154,7 @@ Resources:
           }
       Handler: index.redirect
       MemorySize: 128
-      Role: !GetAtt LambdaRole.Arn
+      Role: !ImportValue "busy-engineers-workshop-LambdaRole"
       Runtime: nodejs8.10
       Timeout: 5
   RedirectPermissions:
@@ -219,47 +219,6 @@ Resources:
           - '-key'
       TargetKeyId: !Ref KMSKey
 
-  ## Main backend application lambda function configuration
-  LambdaRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - 'sts:AssumeRole'
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-
-  IAMPolicyWrite:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      Roles:
-        - !Ref LambdaRole
-      PolicyName: WritePolicy
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Resource: !GetAtt SQSQueue.Arn
-            Action: 
-              - "sqs:GetQueueUrl"
-              - "sqs:SendMessage*"
-              - "sqs:GetQueueUrl"
-              - "sqs:ReceiveMessage*"
-              - "sqs:ChangeMessageVisibility*"
-              - "sqs:DeleteMessage*"
-          - Effect: Allow
-            Resource: !GetAtt KMSKey.Arn
-            Action:
-              - "kms:Encrypt"
-              - "kms:Decrypt"
-              - "kms:GenerateDataKey"
-
   LambdaFunc:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -270,7 +229,7 @@ Resources:
       ## We don't need this much memory, but setting a high memorysize means we get more CPU allocated, which reduces
       ## startup times.
       MemorySize: 1536
-      Role: !GetAtt LambdaRole.Arn
+      Role: !ImportValue "busy-engineers-workshop-LambdaRole"
       Runtime: java8
       Timeout: 30
       Environment:
@@ -296,37 +255,14 @@ Resources:
       IsMultiRegionTrail: false # We only care about demo resources in the same region
       IsLogging: true
       CloudWatchLogsLogGroupArn: !GetAtt CloudtrailLogGroup.Arn
-      CloudWatchLogsRoleArn: !GetAtt CloudtrailRole.Arn
+      CloudWatchLogsRoleArn: !ImportValue "busy-engineers-workshop-CloudtrailRole"
 # an S3 bucket is still required, even when using CWlogs delivery
       S3BucketName: !Ref S3Bucket
     DependsOn:
      # We need to wait for the various IAM policies to be configured, as CW logs will validate these policies when the
      # trail is created, and fail the trail creation if they are not configured appropriately.
       - CloudtrailBucketPolicy
-      - CloudtrailRolePolicy
 
-  CloudtrailRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal: { "Service": "cloudtrail.amazonaws.com" }
-
-  CloudtrailRolePolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      Roles: [!Ref CloudtrailRole]
-      PolicyName: CloudtrailPolicy
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Sid: PutLogs
-            Effect: Allow
-            Action: ["logs:CreateLogStream", "logs:PutLogEvents"]
-            Resource: !GetAtt CloudtrailLogGroup.Arn
 
   CloudtrailLogGroup:
     Type: AWS::Logs::LogGroup
