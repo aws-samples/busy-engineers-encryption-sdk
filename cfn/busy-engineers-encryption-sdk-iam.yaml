@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Busy Engineer's Guide to the Encryption SDK IAM Roles
+
+Resources:
+ #--------------------------------------------------------------------------------
+ ## Main backend application lambda function configuration
+  LambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - 'arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  IAMPolicyWrite:
+      Type: 'AWS::IAM::Policy'
+      Properties:
+        Roles:
+          - !Ref LambdaRole
+        PolicyName: WritePolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              # Best practice is to scope the resource down to only the necessary resource ARNs, 
+              # but we have to keep it '*' here since we're creating it before the resources
+              Resource: '*' 
+              Action:
+                - "sqs:GetQueueUrl"
+                - "sqs:SendMessage*"
+                - "sqs:GetQueueUrl"
+                - "sqs:ReceiveMessage*"
+                - "sqs:ChangeMessageVisibility*"
+                - "sqs:DeleteMessage*"
+            - Effect: Allow
+              # Best practice is to scope the resource down to only the necessary resource ARNs, 
+              # but we have to keep it '*' here since we're creating it before the resources
+              Resource: '*'
+              Action:
+                - "kms:Encrypt"
+                - "kms:Decrypt"
+                - "kms:GenerateDataKey"
+                - "kms:ScheduleKeyDeletion"
+
+  CloudtrailRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal: { "Service": "cloudtrail.amazonaws.com" }
+
+
+  CloudtrailRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles: [!Ref CloudtrailRole]
+      PolicyName: CloudtrailPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: PutLogs
+            Effect: Allow
+            Action: ["logs:CreateLogStream", "logs:PutLogEvents"]
+            # Best practice is to scope the resource down to only the necessary resource ARNs, 
+            # but we have to keep it '*' here since we're creating it before the resources
+            Resource: '*'
+
+  ## API Gateway Role
+  ApiCloudwatchRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+
+Outputs:
+  BusyEngineersWorkshopLambdaRole:
+    Description: Role to use for the Lambda in the Busy Engieneer's Workshop
+    Value: !GetAtt LambdaRole.Arn
+    Export:
+      Name: "busy-engineers-workshop-LambdaRole"
+
+  BusyEngineersWorkshopCloudtrailRole:
+    Description: Role to use for Cloudtrail in the Busy Engieneer's Workshop
+    Value: !GetAtt CloudtrailRole.Arn
+    Export:
+      Name: "busy-engineers-workshop-CloudtrailRole"
+
+  BusyEngineersWorkshopApiGatewayCloudwatchRole:
+    Description: Role to use for API Gateway and Cloudwatch in the Busy Engieneer's Workshop
+    Value: !GetAtt ApiCloudwatchRole.Arn
+    Export:
+      Name: "busy-engineers-workshop-ApiGatewayCloudwatchRole"
