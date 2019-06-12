@@ -49,6 +49,9 @@ Resources:
                 - "kms:Decrypt"
                 - "kms:GenerateDataKey"
                 - "kms:ScheduleKeyDeletion"
+                - "kms:DescribeKey"
+                - "kms:CreateGrant"
+                - "kms:RevokeGrant"
 
   CloudtrailRole:
     Type: AWS::IAM::Role
