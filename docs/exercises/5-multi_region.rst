@@ -1,12 +1,12 @@
 
 .. _Exercise 5:
 
-**********************************
-Exercise 5: The AWS Encryption SDK
-**********************************
+******************************************
+Exercise 5: Multiple Master Key Encryption
+******************************************
 
-So far we've been working with the SDK's KMS client directly. This has a few
-limitations, as we'll see.
+So far we have been working with the AWS Encryption SDK using a single Customer Master Key (CMK) to perform
+encryption and decryption. We will now be exploring the multi region CMK capability of the AWS Encryption SDK.
 
 Before we start
 ===============
@@ -350,8 +350,8 @@ You can provide either a Master Key or a Master Key Provider to the client, and 
 .. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
 .. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-operations
 
-Illustrating Multi Region CMKs in Effect
-========================================
+Illustrating Multi Region CMKs Usage
+====================================
 
 Now that you are done making the necessary code changes we will be leveraging grants to prevent usage of the local
 key to illustrate that encryption and decryption is still possible by using a key in another region. Grants are one
