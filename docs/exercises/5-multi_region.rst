@@ -130,7 +130,7 @@ we won't need to keep around the key ID, so we can discard that value.
         the first master key added to the master key provider is the one used to generate the new data
         key and the other master keys are used to encrypt the new data key. We will use MultipleProviderFactory
         to combine all the master keys into a single master key provider. We will construct the master keys
-        to pass to the MultipleProviderFactory after this.
+        to pass to the ``getKeyProvider`` after this.
 
         .. code-block:: java
            :lineno-start: 60
