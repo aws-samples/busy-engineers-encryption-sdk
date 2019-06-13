@@ -41,6 +41,7 @@ class EncryptDecrypt(object):
         :rtype: str
         """
         encryption_context = {self._message_type: self._type_order_inquiry}
+        order_id = data.get("orderid", "")
         if order_id:
             encryption_context[self._order_id] = order_id
         ciphertext, _header = aws_encryption_sdk.encrypt(
