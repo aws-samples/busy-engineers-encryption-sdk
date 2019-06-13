@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Helper class to handle encryption.
-
 This is the only module that you need to modify in the Busy Engineer's Guide to the Encryption SDK workshop.
 """
 import base64
@@ -33,7 +32,6 @@ class EncryptDecrypt(object):
 
     def encrypt(self, data):
         """Encrypt data.
-
         :param data: JSON-encodeable data to encrypt
         :returns: Base64-encoded, encrypted data
         :rtype: str
@@ -49,7 +47,6 @@ class EncryptDecrypt(object):
 
     def decrypt(self, data):
         """Decrypt data.
-
         :param bytes data: Base64-encoded, encrypted data
         :returns: JSON-decoded, decrypted data
         """
