@@ -21,6 +21,7 @@ such as `Encryption Context`_ and Data Key Caching.
     exercises/2-kms_encryption.rst
     exercises/3-encryption_sdk.rst
     exercises/4-caching.rst
+    exercises/5-multi_region.rst
     debugging-tips.rst
     cleaning-up.rst
 
