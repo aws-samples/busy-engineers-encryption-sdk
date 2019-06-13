@@ -16,6 +16,8 @@ This is the only module that you need to modify in the Busy Engineer's Guide to 
 """
 import base64
 import json
+import time
+import boto3
 
 import aws_encryption_sdk
 
@@ -29,7 +31,7 @@ class EncryptDecrypt(object):
         self._type_order_inquiry = "order inquiry"
         self._timestamp = "rough timestamp"
         self._order_id = "order ID"
-        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+        self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id)
 
     def encrypt(self, data):
         """Encrypt data.
@@ -39,9 +41,6 @@ class EncryptDecrypt(object):
         :rtype: str
         """
         encryption_context = {self._message_type: self._type_order_inquiry}
-        order_id = data.get("orderid", "")
-        if order_id:
-            encryption_context[self._order_id] = order_id
         ciphertext, _header = aws_encryption_sdk.encrypt(
             source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
         )
@@ -63,3 +62,18 @@ class EncryptDecrypt(object):
             raise ValueError("Bad message type in decrypted message")
 
         return json.loads(plaintext)
+
+    def construct_multiregion_kms_master_key_provider(self, key_id_east):
+        alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2-finalCheckPlz'
+        arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
+
+        kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
+        account_id = boto3.client('sts').get_caller_identity()['Account']
+
+        kms_master_key_provider.add_master_key(key_id_east)
+        kms_master_key_provider.add_master_key(arn_template.format(
+            region="us-west-2",
+            account_id=account_id,
+            alias=alias_west
+        ))
+        return kms_master_key_provider
