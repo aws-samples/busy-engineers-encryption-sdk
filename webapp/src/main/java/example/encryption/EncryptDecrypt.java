@@ -78,7 +78,7 @@ public class EncryptDecrypt {
         String[] arrOfStr = keyId.split(":");
         String accountId = arrOfStr[4];
         String keyIdWest = "arn:aws:kms:us-west-2:" + accountId +
-            ":alias/busy-engineers-encryption-sdk-key-us-west-2-eek";
+            ":alias/busy-engineers-encryption-sdk-key-us-west-2";
         this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest).getMasterKey(keyIdWest);
         //Construct Master Key Provider
         this.provider = getKeyProvider(masterKeyEast, masterKeyWest);
