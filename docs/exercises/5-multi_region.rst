@@ -151,7 +151,7 @@ we won't need to keep around the key ID, so we can discard that value.
            :lineno-start: 66
 
              def construct_multiregion_kms_master_key_provider(self, key_id_east):
-                alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2-finalCheckPlz'
+                alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2'
                 arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
 
                 kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
