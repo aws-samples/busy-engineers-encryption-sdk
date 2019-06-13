@@ -67,7 +67,7 @@ class EncryptDecrypt(object):
         return json.loads(plaintext)
 
     def construct_multiregion_kms_master_key_provider(self, key_id_east):
-        alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2-finalCheckPlz'
+        alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2'
         arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
 
         kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
