@@ -76,8 +76,14 @@ First, let's make sure the Encryption SDK is set up as a dependency correctly.
 
                 <dependency>
                     <groupId>com.amazonaws</groupId>
-                    <artifactId>aws-encryption-sdk-java</artifactId>
-                    <version>1.3.5</version>
+                    <artifactId>aws-java-sdk-core</artifactId>
+                    <version>1.11.213</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-java-sdk-sts</artifactId>
+                    <version>1.11.213</version>
                 </dependency>
 
     .. group-tab:: Python
@@ -97,11 +103,8 @@ Now, let's add some imports:
         .. code-block:: java
            :lineno-start: 30
 
-            import java.util.Objects;
-            import com.amazonaws.encryptionsdk.AwsCrypto;
-            import com.amazonaws.encryptionsdk.CryptoResult;
-            import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
-            import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
+            import com.amazonaws.encryptionsdk.MasterKeyProvider;
+            import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
 
     .. group-tab:: Python
 
@@ -124,20 +127,15 @@ we won't need to keep around the key ID, so we can discard that value.
         CMKs. We will create a single master key provider to which all the CMKs are added. Note that
         the first master key added to the master key provider is the one used to generate the new data
         key and the other master keys are used to encrypt the new data key. We will use MultipleProviderFactory
-        to combine all the master keys into a single master key provider.
+        to combine all the master keys into a single master key provider. We will construct the master keys
+        to pass to the MultipleProviderFactory after this.
 
         .. code-block:: java
-           :lineno-start: 56
+           :lineno-start: 60
+            private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
+                return MultipleProviderFactory.buildMultiProvider(masterKeyEast, masterKeyWest);
+            }
 
-            private final MasterKeyProvider<?> masterKeyProvider;
-
-        In our constructor, we'll create the Master Key like so:
-
-        .. code-block:: java
-           :lineno-start: 69
-
-            this.masterKey = new KmsMasterKeyProvider(keyId)
-                .getMasterKey(keyId);
 
     .. group-tab:: Python
 
@@ -172,16 +170,18 @@ we won't need to keep around the key ID, so we can discard that value.
         for the KMS Master Key Provider.
 
         .. code-block:: java
-           :lineno-start: 56
+           :lineno-start: 60
 
-            private final MasterKeyProvider<?> masterKeyProvider;
+            private final KmsMasterKey masterKeyEast;
+            private final KmsMasterKey masterKeyWest;
+            private final MasterKeyProvider<?> provider;
 
         In our constructor, we'll create the Master Key like so:
 
         .. code-block:: java
-           :lineno-start: 69
+           :lineno-start: 85
 
-            this.masterKeyProvider = getMasterKeyProvider()
+            this.masterKeyProvider = getMasterKeyProvider(masterKeyEast, masterKeyWest)
 
     .. group-tab:: Python
 
