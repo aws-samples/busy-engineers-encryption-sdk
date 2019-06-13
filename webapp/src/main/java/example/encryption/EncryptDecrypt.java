@@ -39,6 +39,10 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.amazonaws.encryptionsdk.MasterKeyProvider;
+import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
+
+
 /**
  * This class centralizes the logic for encryption and decryption of messages, to allow for easier modification.
  *
@@ -53,7 +57,9 @@ public class EncryptDecrypt {
     private static final String K_ORDER_ID = "order ID";
 
     private final AWSKMS kms;
-    private final KmsMasterKey masterKey;
+    private final KmsMasterKey masterKeyEast;
+    private final KmsMasterKey masterKeyWest;
+    private final MasterKeyProvider<?> provider;
 
     @SuppressWarnings("unused") // all fields are used via JSON deserialization
     private static class FormData {
@@ -66,8 +72,17 @@ public class EncryptDecrypt {
     @Inject
     public EncryptDecrypt(@Named("keyId") final String keyId) {
         kms = AWSKMSClient.builder().build();
-        this.masterKey = new KmsMasterKeyProvider(keyId)
+        //Get Master Keys from East and West
+        this.masterKeyEast = new KmsMasterKeyProvider(keyId)
             .getMasterKey(keyId);
+        String[] arrOfStr = keyId.split(":");
+        String accountId = arrOfStr[4];
+        String keyIdWest = "arn:aws:kms:us-west-2:" + accountId +
+            ":alias/busy-engineers-encryption-sdk-key-us-west-2-eek";
+        this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest).getMasterKey(keyIdWest);
+        //Construct Master Key Provider
+        this.provider = getKeyProvider(masterKeyEast, masterKeyWest);
+
     }
 
     public String encrypt(JsonNode data) throws IOException {
@@ -84,7 +99,7 @@ public class EncryptDecrypt {
             context.put(K_ORDER_ID, formValues.orderid);
         }
 
-        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+        byte[] ciphertext = new AwsCrypto().encryptData(provider, plaintext, context).getResult();
 
         return Base64.getEncoder().encodeToString(ciphertext);
     }
@@ -92,13 +107,17 @@ public class EncryptDecrypt {
     public JsonNode decrypt(String ciphertext) throws IOException {
         byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
-        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(provider, ciphertextBytes);
 
         // Check that we have the correct type
         if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
             throw new IllegalArgumentException("Bad message type in decrypted message");
         }
-
         return MAPPER.readTree(result.getResult());
     }
+
+    private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
+        return MultipleProviderFactory.buildMultiProvider(masterKeyEast, masterKeyWest);
+    }
+
 }
