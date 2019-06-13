@@ -119,6 +119,8 @@ to protect your data. The first step to using the Encryption SDK is setting up
 a Master Key or Master Key Provider. Once we set up our Master Key Provider,
 we won't need to keep around the key ID, so we can discard that value.
 
+
+
 .. tabs::
 
     .. group-tab:: Java
@@ -132,6 +134,7 @@ we won't need to keep around the key ID, so we can discard that value.
 
         .. code-block:: java
            :lineno-start: 60
+
             private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
                 return MultipleProviderFactory.buildMultiProvider(masterKeyEast, masterKeyWest);
             }
@@ -166,7 +169,7 @@ we won't need to keep around the key ID, so we can discard that value.
 
     .. group-tab:: Java
 
-        We won't need the class attribute for ``keyID``, so replace that with ``masterKeyProvider``
+        We won't need the class attribute for ``keyID``, so replace that with ``MasterKeyProvider``
         for the KMS Master Key Provider.
 
         .. code-block:: java
@@ -176,7 +179,23 @@ we won't need to keep around the key ID, so we can discard that value.
             private final KmsMasterKey masterKeyWest;
             private final MasterKeyProvider<?> provider;
 
-        In our constructor, we'll create the Master Key like so:
+        In our constructor, we'll create the Master Keys like so:
+
+        .. code-block:: java
+           :lineno-start: 75
+
+            kms = AWSKMSClient.builder().build();
+            //Get Master Keys from East and West
+            this.masterKeyEast = new KmsMasterKeyProvider(keyId).getMasterKey(keyId);
+            String[] arrOfStr = keyId.split(":");
+            String accountId = arrOfStr[4];
+            String keyIdWest = "arn:aws:kms:us-west-2:" + accountId +
+                ":alias/busy-engineers-encryption-sdk-key-us-west-2-eek";
+            this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest).getMasterKey(keyIdWest);
+            //Construct Master Key Provider
+            this.provider = getKeyProvider(masterKeyEast, masterKeyWest);
+
+        In our constructor, we'll create the Master Key Provider and pass in the Master Keys like so:
 
         .. code-block:: java
            :lineno-start: 85
