@@ -150,18 +150,18 @@ we won't need to keep around the key ID, so we can discard that value.
         .. code-block:: python
            :lineno-start: 66
 
-            def construct_multiregion_kms_master_key_provider(self):
-                regions = ('us-east-2', 'us-west-2')
-                alias = 'alias/busy-engineers-workshop-python-key'
+             def construct_multiregion_kms_master_key_provider(self, key_id_east):
+                alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2-finalCheckPlz'
                 arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
 
                 kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
                 account_id = boto3.client('sts').get_caller_identity()['Account']
-                for region in regions:
-                    kms_master_key_provider.add_master_key(arn_template.format(
-                    region=region,
+
+                kms_master_key_provider.add_master_key(key_id_east)
+                kms_master_key_provider.add_master_key(arn_template.format(
+                    region="us-west-2",
                     account_id=account_id,
-                    alias='{}-{}'.format(alias, region)
+                    alias=alias_west
                 ))
                 return kms_master_key_provider
 
@@ -303,49 +303,6 @@ For decrypt, we just need to make sure we are passing in the master key provider
                     raise ValueError("Bad message type in decrypted message")
 
                 return json.loads(plaintext)
-
-Note, for Python only: Now we need to modify the handler file to pass in the appropriate arguments when
-constructing the EncryptDecrypt object.
-
-.. tabs::
-
-    .. group-tab:: Java
-
-        .. code-block:: java
-           :lineno-start: 92
-
-            Skip to below.
-
-    .. group-tab:: Python
-
-        The file we are modifying is /src/busy-engineers-workshop/handler.py Start out by commenting out
-        references to KMS_CMK_VAR since our EncryptDecrypt class will collect the kms key ids when constructing
-        the master key providers. Next, remove any parameters from being passed into the EncryptDecrypt() object.
-
-        .. code-block:: python
-           :lineno-start: 50
-
-            SQS_QUEUE_VAR = "queue_url"
-            # KMS_CMK_VAR = "kms_key_id"
-            MIN_ROUNDS = 10
-            MAX_MESSAGE_BATCH_SIZE = 50
-            _LOGGER = logging.getLogger()
-            _LOGGER.setLevel(logging.DEBUG)
-            _LOG_WATCHER = KmsLogListener()
-            logging.basicConfig(level=logging.DEBUG)
-            _is_setup = False
-
-
-            def _setup():
-                """Create resources once on Lambda cold start."""
-                global _sqs_queue
-                queue = os.environ.get(SQS_QUEUE_VAR)
-                sqs = boto3.resource("sqs")
-                _sqs_queue = sqs.Queue(queue)
-
-                global _encrypt_decrypt
-                # key_id = os.environ.get(KMS_CMK_VAR)
-                _encrypt_decrypt = EncryptDecrypt()
 
 
 Now use the :ref:`Build tool commands` to deploy your application again.
