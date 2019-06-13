@@ -215,7 +215,7 @@ provider.
                 HashMap<String, String> context = new HashMap<>();
                 context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
 
-                byte[] ciphertext = new AwsCrypto().encryptData(masterKeyProvider, plaintext, context).getResult();
+                byte[] ciphertext = new AwsCrypto().encryptData(provider, plaintext, context).getResult();
 
                 return Base64.getEncoder().encodeToString(ciphertext);
             }
@@ -251,7 +251,7 @@ For decrypt, we just need to make sure we are passing in the master key provider
             public JsonNode decrypt(String ciphertext) throws IOException {
                 byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
-                CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKeyProvider, ciphertextBytes);
+                CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(provider, ciphertextBytes);
 
                 // Check that we have the correct type
                 if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
@@ -285,8 +285,8 @@ For decrypt, we just need to make sure we are passing in the master key provider
 
                 return json.loads(plaintext)
 
-Now we need to modify the handler file to pass in the appropriate arguments when constructing the EncryptDecrypt
-object.
+Note, for Python only: Now we need to modify the handler file to pass in the appropriate arguments when
+constructing the EncryptDecrypt object.
 
 .. tabs::
 
@@ -295,7 +295,7 @@ object.
         .. code-block:: java
            :lineno-start: 92
 
-            tbd
+            Skip to below.
 
     .. group-tab:: Python
 
@@ -367,23 +367,25 @@ key from being accessed.
 
     .. group-tab:: Java
 
-        We have built a simple java program that sets the grant, thereby disabling the use of the local key. Compile
-        and run the program on the cloud9 CLI as below.
+        We have built a simple bash script that sets the grant, thereby disabling the use of the local key. Run
+        the script as below.
 
-        .. code-block:: java
-           :lineno-start: bash
+        Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
-            javac assign_grants.java
-            java assign_grants.java
+        .. code-block:: bash
+
+            ./assign_grant.sh
 
     .. group-tab:: Python
 
         We have built a simple python script that sets the grant, thereby disabling the use of the local key. Run
         the script on the cloud9 CLI as below.
 
+        Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
+
         .. code-block:: bash
 
-            python assign_grants.py
+            ./assign_grant.sh
 
 Now go ahead and send some new encrypted data to the SQS queue in the web interface. Then visit the backend logs
 in cloudwatch to see that the ciphertext was encrypted using the key from another region. Afterwards, go ahead
@@ -397,50 +399,26 @@ key for encryption/decryption.
 
     .. group-tab:: Java
 
-        Uncomment the call to revoke the grant. You can get the grant_id from the program output to the CLI and
-        directly supply that as a string parameter.
+        We have built a simple python script that revokes the grant, thereby enabling the use of the local key. Run
+        the script on the cloud9 CLI as below.
 
-        .. code-block:: java
-           :lineno-start:
-
-            TBD
-
-        Then compile and re-run the script.
+        Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
         .. code-block:: bash
 
-            javac assign_grants.java
-            java assign_grants.java
+            ./revoke_grant.sh
+
 
     .. group-tab:: Python
 
-        Comment out the calls to assign the grant. Then, uncomment the call to revoke the grant. You can get the
-        grant_id from the program output to the CLI and directly supply that as a string parameter.
+        We have built a simple python script that revokes the grant, thereby enabling the use of the local key. Run
+        the script on the cloud9 CLI as below.
 
-        .. code-block:: python
-           :lineno-start: 68
-
-            # add encryption context to us-east-2 key to prevent usage
-            # encryption_context = {'key_use': 'bad key'}
-            # grant_id_east = create_grant(kms_east, key_east_id, iam_arn, encryption_context)
-            # print('created grant for us-east-2 key ({}) to prevent usage'.format(key_east_id))
-            # print('stopped usage for us-east-2 key...')
-            # print('Now retest sending a message and visit the logs to see that us-west-2 key is used
-            # 'instead of the us-east-2 key to encrypt/decrypt the data!')
-
-            '''
-             To Revoke a Grant: You can grab grant_id_east from the console output and supply it as a string directly.
-             Uncomment the code below to revoke the grant and you will see the application move back to using the key in
-             us-east-2 in the logs
-            '''
-
-             revoke_grant(kms_east, key_east_id, grant_id_east)
-
-        Then re-run the script.
+        Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
         .. code-block:: bash
 
-            python assign_grants.py
+            ./revoke_grant.sh
 
 You can now go back to the cloudwatch logs and see the application return to using the local key for encryption
 and decryption.
@@ -462,169 +440,11 @@ View step-by-step changes in context, and compare your work if desired.
 
         .. code:: diff
 
-            diff --git a/webapp/pom.xml b/webapp/pom.xml
-            index a565be8..643dd86 100644
-            --- a/webapp/pom.xml
-            +++ b/webapp/pom.xml
-            @@ -30,6 +30,12 @@
-                         <version>1.1.0</version>
-                     </dependency>
-
-            +        <dependency>
-            +            <groupId>com.amazonaws</groupId>
-            +            <artifactId>aws-encryption-sdk-java</artifactId>
-            +            <version>1.3.5</version>
-            +        </dependency>
-            +
-                     <dependency>
-                         <groupId>com.amazonaws</groupId>
-                         <artifactId>aws-java-sdk-sqs</artifactId>
-            diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
-            index 29b6f71..b544d59 100644
-            --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
-            +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
-            @@ -27,6 +27,10 @@ import java.util.concurrent.TimeUnit;
-
-             import org.apache.log4j.Logger;
-
-            +import com.amazonaws.encryptionsdk.AwsCrypto;
-            +import com.amazonaws.encryptionsdk.CryptoResult;
-            +import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
-            +import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
-             import com.amazonaws.services.kms.AWSKMS;
-             import com.amazonaws.services.kms.AWSKMSClient;
-             import com.amazonaws.services.kms.model.DecryptRequest;
-            @@ -46,9 +50,10 @@ public class EncryptDecrypt {
-                 private static final Logger LOGGER = Logger.getLogger(EncryptDecrypt.class);
-                 private static final String K_MESSAGE_TYPE = "message type";
-                 private static final String TYPE_ORDER_INQUIRY = "order inquiry";
-            +    private static final String K_ORDER_ID = "order ID";
-
-                 private final AWSKMS kms;
-            -    private final String keyId;
-            +    private final KmsMasterKey masterKey;
-
-                 @SuppressWarnings("unused") // all fields are used via JSON deserialization
-                 private static class FormData {
-            @@ -61,7 +66,8 @@ public class EncryptDecrypt {
-                 @Inject
-                 public EncryptDecrypt(@Named("keyId") final String keyId) {
-                     kms = AWSKMSClient.builder().build();
-            -        this.keyId = keyId;
-            +        this.masterKey = new KmsMasterKeyProvider(keyId)
-            +            .getMasterKey(keyId);
-                 }
-
-                 public String encrypt(JsonNode data) throws IOException {
-            @@ -72,19 +78,13 @@ public class EncryptDecrypt {
-
-                     byte[] plaintext = MAPPER.writeValueAsBytes(formValues);
-
-            -        EncryptRequest request = new EncryptRequest();
-            -        request.setKeyId(keyId);
-            -        request.setPlaintext(ByteBuffer.wrap(plaintext));
-            -
-                     HashMap<String, String> context = new HashMap<>();
-                     context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
-            -        request.setEncryptionContext(context);
-            -
-            -        EncryptResult result = kms.encrypt(request);
-            +        if (formValues.orderid != null && formValues.orderid.length() > 0) {
-            +            context.put(K_ORDER_ID, formValues.orderid);
-            +        }
-
-            -        // Convert to byte array
-            -        byte[] ciphertext = new byte[result.getCiphertextBlob().remaining()];
-            -        result.getCiphertextBlob().get(ciphertext);
-            +        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
-
-                     return Base64.getEncoder().encodeToString(ciphertext);
-                 }
-            @@ -92,19 +92,13 @@ public class EncryptDecrypt {
-                 public JsonNode decrypt(String ciphertext) throws IOException {
-                     byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
-
-            -        DecryptRequest request = new DecryptRequest();
-            -        request.setCiphertextBlob(ByteBuffer.wrap(ciphertextBytes));
-            -
-            -        HashMap<String, String> context = new HashMap<>();
-            -        context.put(K_MESSAGE_TYPE, TYPE_ORDER_INQUIRY);
-            -        request.setEncryptionContext(context);
-            -
-            -        DecryptResult result = kms.decrypt(request);
-            +        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
-
-            -        // Convert to byte array
-            -        byte[] plaintext = new byte[result.getPlaintext().remaining()];
-            -        result.getPlaintext().get(plaintext);
-            +        // Check that we have the correct type
-            +        if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
-            +            throw new IllegalArgumentException("Bad message type in decrypted message");
-            +        }
-
-            -        return MAPPER.readTree(plaintext);
-            +        return MAPPER.readTree(result.getResult());
-                 }
-             }
+           coming soon
 
     .. group-tab:: Python
 
         .. code:: diff
 
-            diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
-            index b7e8e07..b1cef27 100644
-            --- a/src/busy_engineers_workshop/encrypt_decrypt.py
-            +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
-            @@ -17,7 +17,7 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
-             import base64
-             import json
-
-            -import boto3
-            +import aws_encryption_sdk
-
-
-             class EncryptDecrypt(object):
-            @@ -28,8 +28,8 @@ class EncryptDecrypt(object):
-                     self._message_type = "message_type"
-                     self._type_order_inquiry = "order inquiry"
-                     self._timestamp = "rough timestamp"
-            -        self.key_id = key_id
-            -        self.kms = boto3.client("kms")
-            +        self._order_id = "order ID"
-            +        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
-
-                 def encrypt(self, data):
-                     """Encrypt data.
-            @@ -39,9 +39,12 @@ class EncryptDecrypt(object):
-                     :rtype: str
-                         """
-                         encryption_context = {self._message_type: self._type_order_inquiry}
-                -        plaintext = json.dumps(data).encode("utf-8")
-                -        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
-                -        ciphertext = response["CiphertextBlob"]
-                +        order_id = data.get("orderid", "")
-                +        if order_id:
-                +            encryption_context[self._order_id] = order_id
-                +        ciphertext, _header = aws_encryption_sdk.encrypt(
-                +            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
-                +        )
-                         return base64.b64encode(ciphertext).decode("utf-8")
-
-                     def decrypt(self, data):
-                @@ -51,8 +54,12 @@ class EncryptDecrypt(object):
-                         :returns: JSON-decoded, decrypted data
-                         """
-                         ciphertext = base64.b64decode(data)
-                -        encryption_context = {self._message_type: self._type_order_inquiry}
-                -        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
-                -        plaintext = response["Plaintext"]
-                +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
-                +
-                +        try:
-                +            if header.encryption_context[self._message_type] != self._type_order_inquiry:
-                +                raise KeyError()  # overloading KeyError to use the same exit whether wrong or missing
-                +        except KeyError:
-                +            raise ValueError("Bad message type in decrypted message")
-
-                         return json.loads(plaintext)
+            coming soon
 
