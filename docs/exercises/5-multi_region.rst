@@ -6,13 +6,15 @@ Exercise 5: Multiple Master Key Encryption
 ******************************************
 
 So far we have been working with the AWS Encryption SDK using a single Customer Master Key (CMK) to perform
-encryption and decryption. We will now be exploring the multi region CMK capability of the AWS Encryption SDK.
+encryption and decryption. We will now be exploring the multi-CMK capability of the AWS Encryption SDK
+by using Multiple Master Key Encryption.
 
 Before we start
 ===============
 
-We'll assume that you've completed the code changes in :ref:`Exercise 3`
-first. If you haven't, you can use this git command to catch up:
+Note, that this exercise builds off of Exercise 3 and runs in parallel
+to Exercise 4. We'll assume that you've completed the code changes in
+:ref:`Exercise 3` first. If you haven't, you can use this git command to catch up:
 
 .. tabs::
 
@@ -20,13 +22,13 @@ first. If you haven't, you can use this git command to catch up:
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-4 origin/exercise-4-start-java
+            git checkout -f -B exercise-5  origin/exercise-5-start-java
 
     .. group-tab:: Python
 
         .. code-block:: bash
 
-            git checkout -f -B exercise-4 origin/exercise-4-start-python
+            git checkout -f -B exercise-5 origin/exercise-5-start-python
 
 This will give you a codebase that already uses the AWS Encryption SDK
 Note that any uncommitted changes you've made already will be lost.
@@ -48,7 +50,7 @@ There is a workaround to this limitation. By using envelope encryption,
 you can encrypt the data key with KMS CMKs in different regions. Applications
 running in each region can then use the local KMS endpoint to decrypt data
 faster and with higher availability. This also allows your data to be recovered
-using the key from another region if the local KMS CMK has been corrupted,
+using the CMK from another region if the KMS CMK of the current region has been corrupted,
 disabled, or deleted.
 
 Overview of exercise
@@ -63,7 +65,7 @@ In this exercise we'll:
 Step by step
 ------------
 
-First, let's make sure the Encryption SDK is set up as a dependency correctly.
+First, let's make sure the dependencies are setup correctly.
 
 
 .. tabs::
@@ -114,11 +116,12 @@ Now, let's add some imports:
             import aws_encryption_sdk
             import boto3
 
-:ref:`master-keys` are used by the AWS Encryption SDK
-to protect your data. The first step to using the Encryption SDK is setting up
-a Master Key or Master Key Provider. Once we set up our Master Key Provider,
-we won't need to keep around the key ID, so we can discard that value.
-
+:ref:`master-keys` are used by the AWS Encryption SDK to protect your data.
+The first step to setting up multiple master keys is setting up a Master Key
+Provider. When setting up our Master Key Provider, we will be adding a CMK in
+the region the application runs in, us-east-2, as well as, in a different
+region, us-west-2. Please note, the CloudFormation template will create the CMKs
+for you in us-east-2 and us-west-2.
 
 
 .. tabs::
@@ -151,7 +154,7 @@ we won't need to keep around the key ID, so we can discard that value.
            :lineno-start: 66
 
              def construct_multiregion_kms_master_key_provider(self, key_id_east):
-                alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2-finalCheckPlz'
+                alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2'
                 arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
 
                 kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
@@ -169,7 +172,8 @@ we won't need to keep around the key ID, so we can discard that value.
 
     .. group-tab:: Java
 
-        We won't need the class attribute for ``keyID``, so replace that with ``MasterKeyProvider``
+        We won't need the class attribute for ``MasterKey``, so modify that with ``MasterKeyEast``
+        for the CMK in us-east-2 and ``MasterKeyWest`` for the CMK in us-west-2. Add ``MasterKeyProvider``
         for the KMS Master Key Provider.
 
         .. code-block:: java
@@ -204,13 +208,13 @@ we won't need to keep around the key ID, so we can discard that value.
 
     .. group-tab:: Python
 
-        We won't need to keep the key ID around, so replace that in ``__init__`` with a call to the new
-        multiple master key provider constructor.
+        We will be constructing a new multi-CMK KMS Master Key Provider, so replace the call to the
+        KMSMasterKeyProvider in ``__init__`` with a call to our multi-CMK KMS Master Key Provider constructor.
 
         .. code-block:: python
            :lineno-start: 32
 
-            self.master_key_provider = self.construct_multiregion_kms_master_key_provider()
+            self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id)
 
 
 For encrypt, everything mostly stays the same, we just need to make sure we are passing in the master key
@@ -326,25 +330,26 @@ You can provide either a Master Key or a Master Key Provider to the client, and 
 .. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
 .. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-operations
 
-Illustrating Multi Region CMKs Usage
+Illustrating Multi-CMKs Usage
 ====================================
 
-Now that you are done making the necessary code changes we will be leveraging grants to prevent usage of the local
-key to illustrate that encryption and decryption is still possible by using a key in another region. Grants are one
-of the supported resource based access control mechanisms that allow you to programmatically delegate the use of CMKs.
-Grants enable more granular permissions management.
+Now that you are done making the necessary code changes we will be leveraging grants to prevent usage of the CMK in
+us-east-2 to illustrate that encryption and decryption is still possible by using a CMK in another region. Grants are
+one of the supported resource based access control mechanisms that allow you to programmatically delegate the use of
+CMKs. Grants enable more granular permissions management.
 
-In this portion of the exercise, we will be adding a grant to the local key that checks if the encryption context
-equals {'key use':'bad key'}. Upon local key retrieval, this grant will block this key from being accessed because
-the encryption context supplied with the ciphertext will not match this constraint. Therefore, preventing the local
-key from being accessed.
+In this portion of the exercise, we will be adding a grant that will block the application's access to use the CMK of
+region we are in, us-east-2. In this grant, we will be adding an encryption context constraint that requires a specific
+encryption context that our application is not using. When the application calls KMS to use the CMK, the application
+will not be able to satisfy the requirements of the grant, and the Maser Key Provider will move on to try the CMK
+in us-west-2.
 
 .. tabs::
 
     .. group-tab:: Java
 
-        We have built a simple bash script that sets the grant, thereby disabling the use of the local key. Run
-        the script as below.
+        We have built a simple bash script that sets the grant, thereby disabling the use of the CMK in us-east-2.
+        Run the script as below.
 
         Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
@@ -354,8 +359,8 @@ key from being accessed.
 
     .. group-tab:: Python
 
-        We have built a simple python script that sets the grant, thereby disabling the use of the local key. Run
-        the script on the cloud9 CLI as below.
+        We have built a simple python script that sets the grant, thereby disabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
         Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
@@ -364,19 +369,19 @@ key from being accessed.
             ./assign_grant.sh
 
 Now go ahead and send some new encrypted data to the SQS queue in the web interface. Then visit the backend logs
-in cloudwatch to see that the ciphertext was encrypted using the key from another region. Afterwards, go ahead
-and retrieve the data. Taking a look at the backend logs in cloudwatch, you will see that the key from another
-region is used to decrypt the data as well.
+in CloudWatch to see that the ciphertext was encrypted using the CMK from us-west-2. Afterwards, go ahead
+and retrieve the data. Taking a look at the backend logs in CloudWatch, you will see that the CMK from us-west-2
+is used to decrypt the data as well.
 
-Once you are done validating, go ahead and revoke the grant to see the application return back to using the local
-key for encryption/decryption.
+Once you are done validating, go ahead and revoke the grant to see the application return back to using the CMK in
+us-east-2 for encryption/decryption.
 
 .. tabs::
 
     .. group-tab:: Java
 
-        We have built a simple python script that revokes the grant, thereby enabling the use of the local key. Run
-        the script on the cloud9 CLI as below.
+        We have built a simple python script that revokes the grant, thereby enabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
         Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
@@ -387,8 +392,8 @@ key for encryption/decryption.
 
     .. group-tab:: Python
 
-        We have built a simple python script that revokes the grant, thereby enabling the use of the local key. Run
-        the script on the cloud9 CLI as below.
+        We have built a simple python script that revokes the grant, thereby enabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
         Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
@@ -396,11 +401,11 @@ key for encryption/decryption.
 
             ./revoke_grant.sh
 
-You can now go back to the cloudwatch logs and see the application return to using the local key for encryption
-and decryption.
+You can now go back to the CloudWatch logs and see the application return to using the CMK in us-east-2 for
+encryption and decryption.
 
-Another good place to see the multi region CMK use in effect is to visit the cloudtrail events for KMS. Here you
-will be able to see all each request that comes to KMS. You can use the debugging tips to help narrow done your
+Another good place to see the multi-CMK use in effect is to visit the CloudTrail events for KMS. Here you
+will be able to see each request that comes to KMS. You can use the debugging tips to help narrow done your
 results.
 
 .. _ex4-change:
@@ -416,11 +421,142 @@ View step-by-step changes in context, and compare your work if desired.
 
         .. code:: diff
 
-           coming soon
+            diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            index b544d59..65828bd 100644
+            --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
+            @@ -39,6 +39,10 @@ import com.amazonaws.services.kms.model.EncryptRequest;
+             import com.amazonaws.services.kms.model.EncryptResult;
+             import com.fasterxml.jackson.databind.JsonNode;
+
+            +import com.amazonaws.encryptionsdk.MasterKeyProvider;
+            +import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
+            +
+            +
+             /**
+              * This class centralizes the logic for encryption and decryption of messages, to allow for easier modification.
+              *
+            @@ -53,7 +57,9 @@ public class EncryptDecrypt {
+                 private static final String K_ORDER_ID = "order ID";
+
+                 private final AWSKMS kms;
+            -    private final KmsMasterKey masterKey;
+            +    private final KmsMasterKey masterKeyEast;
+            +    private final KmsMasterKey masterKeyWest;
+            +    private final MasterKeyProvider<?> provider;
+
+                 @SuppressWarnings("unused") // all fields are used via JSON deserialization
+                 private static class FormData {
+            @@ -66,8 +72,17 @@ public class EncryptDecrypt {
+                 @Inject
+                 public EncryptDecrypt(@Named("keyId") final String keyId) {
+                     kms = AWSKMSClient.builder().build();
+            -        this.masterKey = new KmsMasterKeyProvider(keyId)
+            +        //Get Master Keys from East and West
+            +        this.masterKeyEast = new KmsMasterKeyProvider(keyId)
+                         .getMasterKey(keyId);
+            +        String[] arrOfStr = keyId.split(":");
+            +        String accountId = arrOfStr[4];
+            +        String keyIdWest = "arn:aws:kms:us-west-2:" + accountId +
+            +            ":alias/busy-engineers-encryption-sdk-key-us-west-2-eek";
+            +        this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest).getMasterKey(keyIdWest);
+            +        //Construct Master Key Provider
+            +        this.provider = getKeyProvider(masterKeyEast, masterKeyWest);
+            +
+                 }
+
+                 public String encrypt(JsonNode data) throws IOException {
+            @@ -84,7 +99,7 @@ public class EncryptDecrypt {
+                         context.put(K_ORDER_ID, formValues.orderid);
+                     }
+
+            -        byte[] ciphertext = new AwsCrypto().encryptData(masterKey, plaintext, context).getResult();
+            +        byte[] ciphertext = new AwsCrypto().encryptData(provider, plaintext, context).getResult();
+
+                     return Base64.getEncoder().encodeToString(ciphertext);
+                 }
+            @@ -92,13 +107,17 @@ public class EncryptDecrypt {
+                 public JsonNode decrypt(String ciphertext) throws IOException {
+                     byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
+
+            -        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(masterKey, ciphertextBytes);
+            +        CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(provider, ciphertextBytes);
+
+                     // Check that we have the correct type
+                     if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
+                         throw new IllegalArgumentException("Bad message type in decrypted message");
+                     }
+            -
+                     return MAPPER.readTree(result.getResult());
+                 }
+            +
+            +    private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
+            +        return MultipleProviderFactory.buildMultiProvider(masterKeyEast, masterKeyWest);
+            +    }
+            +
+             }
 
     .. group-tab:: Python
 
         .. code:: diff
 
-            coming soon
+            diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
+            index 256397f..09fdef0 100644
+            --- a/src/busy_engineers_workshop/encrypt_decrypt.py
+            +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
+            @@ -11,10 +11,13 @@
+             # ANY KIND, either express or implied. See the License for the specific
+             # language governing permissions and limitations under the License.
+             """Helper class to handle encryption.
+            +
+             This is the only module that you need to modify in the Busy Engineer's Guide to the Encryption SDK workshop.
+             """
+             import base64
+             import json
+            +import time
+            +import boto3
+
+             import aws_encryption_sdk
+
+            @@ -28,10 +31,11 @@ class EncryptDecrypt(object):
+                     self._type_order_inquiry = "order inquiry"
+                     self._timestamp = "rough timestamp"
+                     self._order_id = "order ID"
+            -        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            +        self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id)
+
+                 def encrypt(self, data):
+                     """Encrypt data.
+            +
+                     :param data: JSON-encodeable data to encrypt
+                     :returns: Base64-encoded, encrypted data
+                     :rtype: str
+            @@ -47,6 +51,7 @@ class EncryptDecrypt(object):
+
+                 def decrypt(self, data):
+                     """Decrypt data.
+            +
+                     :param bytes data: Base64-encoded, encrypted data
+                     :returns: JSON-decoded, decrypted data
+                     """
+            @@ -60,3 +65,18 @@ class EncryptDecrypt(object):
+                         raise ValueError("Bad message type in decrypted message")
+
+                     return json.loads(plaintext)
+            +
+            +    def construct_multiregion_kms_master_key_provider(self, key_id_east):
+            +        alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2'
+            +        arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
+            +
+            +        kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
+            +        account_id = boto3.client('sts').get_caller_identity()['Account']
+            +
+            +        kms_master_key_provider.add_master_key(key_id_east)
+            +        kms_master_key_provider.add_master_key(arn_template.format(
+            +            region="us-west-2",
+            +            account_id=account_id,
+            +            alias=alias_west
+            +        ))
+            +        return kms_master_key_provider
+
 
