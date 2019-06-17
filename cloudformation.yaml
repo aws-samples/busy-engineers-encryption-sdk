@@ -333,7 +333,7 @@ Resources:
         - ''
         - - alias/
           - !Ref 'AWS::StackName'
-          - '-key'
+          - '-key-us-east-2'
       TargetKeyId: !Ref KMSKey
 
   LambdaFunc:
@@ -344,7 +344,7 @@ Resources:
       ## startup times.
       MemorySize: 1536
       Role: !ImportValue "busy-engineers-workshop-LambdaRole"
-      Runtime: python3.6
+      Runtime: java8
       Timeout: 30
       Environment:
         Variables:
