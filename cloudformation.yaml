@@ -333,7 +333,7 @@ Resources:
         - ''
         - - alias/
           - !Ref 'AWS::StackName'
-          - '-key'
+          - '-key-us-east-2'
       TargetKeyId: !Ref KMSKey
 
   LambdaFunc:
