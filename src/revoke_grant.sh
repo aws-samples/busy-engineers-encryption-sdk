@@ -13,4 +13,4 @@ echo $key_id
 
 
 revoke=$(aws kms revoke-grant --key-id $key_id --grant-id "")
-echo $revokerant --key-id $arn --grant_id grant_id_here
+echo $revoke
