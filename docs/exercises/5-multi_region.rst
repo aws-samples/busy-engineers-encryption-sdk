@@ -11,8 +11,9 @@ encryption and decryption. We will now be exploring the multi region CMK capabil
 Before we start
 ===============
 
-We'll assume that you've completed the code changes in :ref:`Exercise 3`
-first. If you haven't, you can use this git command to catch up:
+Note, that this exercise builds off of Exercise 3 and runs in parallel
+to Exercise 4. We'll assume that you've completed the code changes in
+:ref:`Exercise 3`first. If you haven't, you can use this git command to catch up:
 
 .. tabs::
 
@@ -63,7 +64,7 @@ In this exercise we'll:
 Step by step
 ------------
 
-First, let's make sure the Encryption SDK is set up as a dependency correctly.
+First, let's make sure the dependencies are setup correctly.
 
 
 .. tabs::
@@ -114,12 +115,12 @@ Now, let's add some imports:
             import aws_encryption_sdk
             import boto3
 
-:ref:`master-keys` are used by the AWS Encryption SDK
-to protect your data. The first step to using the Encryption SDK is setting up
-a Master Key or Master Key Provider. Once we set up our Master Key Provider,
-we won't need to keep around the key ID, so we can discard that value.
-
-
+:ref:`master-keys` are used by the AWS Encryption SDK to protect your data.
+The first step to setting up Multiple Master Keys is setting up as Master Key
+Provider. When setting up our Master Key Provider, we will be setting up a local
+master key (key for the region we are currently in) and a key in another region.
+Please note, the cloud formation template deployed at the end of this exercise,
+has already created the keys for you in two different regions, us-east-2 and us-west-2.
 
 .. tabs::
 
@@ -210,7 +211,7 @@ we won't need to keep around the key ID, so we can discard that value.
         .. code-block:: python
            :lineno-start: 32
 
-            self.master_key_provider = self.construct_multiregion_kms_master_key_provider()
+            self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id)
 
 
 For encrypt, everything mostly stays the same, we just need to make sure we are passing in the master key
