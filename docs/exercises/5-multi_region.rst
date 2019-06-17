@@ -6,7 +6,7 @@ Exercise 5: Multiple Master Key Encryption
 ******************************************
 
 So far we have been working with the AWS Encryption SDK using a single Customer Master Key (CMK) to perform
-encryption and decryption. We will now be exploring the multi region CMK capability of the AWS Encryption SDK
+encryption and decryption. We will now be exploring the multi-CMK capability of the AWS Encryption SDK
 by using Multiple Master Key Encryption.
 
 Before we start
@@ -50,7 +50,7 @@ There is a workaround to this limitation. By using envelope encryption,
 you can encrypt the data key with KMS CMKs in different regions. Applications
 running in each region can then use the local KMS endpoint to decrypt data
 faster and with higher availability. This also allows your data to be recovered
-using the key from another region if the local KMS CMK has been corrupted,
+using the CMK from another region if the KMS CMK of the current region has been corrupted,
 disabled, or deleted.
 
 Overview of exercise
@@ -118,10 +118,11 @@ Now, let's add some imports:
 
 :ref:`master-keys` are used by the AWS Encryption SDK to protect your data.
 The first step to setting up multiple master keys is setting up a Master Key
-Provider. When setting up our Master Key Provider, we will be adding a local
-master key (the key for the region, us-east-2, we are currently in) and a key
-in another region. Please note, the cloud formation template has already created
-the keys for you in two different regions, us-east-2 and us-west-2.
+Provider. When setting up our Master Key Provider, we will be adding a CMK in
+the region the application runs in, us-east-2, as well as, in a different
+region, us-west-2. Please note, the CloudFormation template will create the CMKs
+for you in us-east-2 and us-west-2.
+
 
 .. tabs::
 
@@ -172,7 +173,7 @@ the keys for you in two different regions, us-east-2 and us-west-2.
     .. group-tab:: Java
 
         We won't need the class attribute for ``MasterKey``, so modify that with ``MasterKeyEast``
-        for the key in us-east-2 and ``MasterKeyWest`` for the key in us-west-2. Add ``MasterKeyProvider``
+        for the CMK in us-east-2 and ``MasterKeyWest`` for the CMK in us-west-2. Add ``MasterKeyProvider``
         for the KMS Master Key Provider.
 
         .. code-block:: java
@@ -207,8 +208,8 @@ the keys for you in two different regions, us-east-2 and us-west-2.
 
     .. group-tab:: Python
 
-        We will be constructing a new multi region KMS Master Key Provider, so replace the call to the
-        KMSMasterKeyProvider in ``__init__`` with a call to our multi region KMS Master Key Provider constructor.
+        We will be constructing a new multi-CMK KMS Master Key Provider, so replace the call to the
+        KMSMasterKeyProvider in ``__init__`` with a call to our multi-CMK KMS Master Key Provider constructor.
 
         .. code-block:: python
            :lineno-start: 32
@@ -329,27 +330,26 @@ You can provide either a Master Key or a Master Key Provider to the client, and 
 .. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
 .. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-operations
 
-Illustrating Multi Region CMKs Usage
+Illustrating Multi-CMKs Usage
 ====================================
 
-Now that you are done making the necessary code changes we will be leveraging grants to prevent usage of the local
-key to illustrate that encryption and decryption is still possible by using a key in another region. Grants are one
-of the supported resource based access control mechanisms that allow you to programmatically delegate the use of CMKs.
-Grants enable more granular permissions management.
+Now that you are done making the necessary code changes we will be leveraging grants to prevent usage of the CMK in
+us-east-2 to illustrate that encryption and decryption is still possible by using a CMK in another region. Grants are
+one of the supported resource based access control mechanisms that allow you to programmatically delegate the use of
+CMKs. Grants enable more granular permissions management.
 
-In this portion of the exercise, we will be adding a grant to the local key in us-east-2 that will block the key from
-being accessed. In this grant, we will be adding an encryption context constraint that will only permit use of the key
-if the encryption context matches the one specified in the grant explicitly. Since we do not want to permit access to
-the key, we will be setting the encryption context equal to {'key use':'bad key'}. Upon key retrieval, this grant will
-block access to the key and the Master Key Provider will use the key in us-west-2 and you will see that the
-encryption operations are still successful.
+In this portion of the exercise, we will be adding a grant that will block the application's access to use the CMK of
+region we are in, us-east-2. In this grant, we will be adding an encryption context constraint that requires a specific
+encryption context that our application is not using. When the application calls KMS to use the CMK, the application
+will not be able to satisfy the requirements of the grant, and the Maser Key Provider will move on to try the CMK
+in us-west-2.
 
 .. tabs::
 
     .. group-tab:: Java
 
-        We have built a simple bash script that sets the grant, thereby disabling the use of the local key. Run
-        the script as below.
+        We have built a simple bash script that sets the grant, thereby disabling the use of the CMK in us-east-2.
+        Run the script as below.
 
         Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
@@ -359,8 +359,8 @@ encryption operations are still successful.
 
     .. group-tab:: Python
 
-        We have built a simple python script that sets the grant, thereby disabling the use of the local key. Run
-        the script on the cloud9 CLI as below.
+        We have built a simple python script that sets the grant, thereby disabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
         Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
@@ -369,19 +369,19 @@ encryption operations are still successful.
             ./assign_grant.sh
 
 Now go ahead and send some new encrypted data to the SQS queue in the web interface. Then visit the backend logs
-in cloudwatch to see that the ciphertext was encrypted using the key from us-west-2. Afterwards, go ahead
-and retrieve the data. Taking a look at the backend logs in cloudwatch, you will see that the key from us-west-2
+in CloudWatch to see that the ciphertext was encrypted using the CMK from us-west-2. Afterwards, go ahead
+and retrieve the data. Taking a look at the backend logs in CloudWatch, you will see that the CMK from us-west-2
 is used to decrypt the data as well.
 
-Once you are done validating, go ahead and revoke the grant to see the application return back to using the local
-us-east-2 key for encryption/decryption.
+Once you are done validating, go ahead and revoke the grant to see the application return back to using the CMK in
+us-east-2 for encryption/decryption.
 
 .. tabs::
 
     .. group-tab:: Java
 
-        We have built a simple python script that revokes the grant, thereby enabling the use of the local key. Run
-        the script on the cloud9 CLI as below.
+        We have built a simple python script that revokes the grant, thereby enabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
         Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
@@ -392,8 +392,8 @@ us-east-2 key for encryption/decryption.
 
     .. group-tab:: Python
 
-        We have built a simple python script that revokes the grant, thereby enabling the use of the local key. Run
-        the script on the cloud9 CLI as below.
+        We have built a simple python script that revokes the grant, thereby enabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
         Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
@@ -401,10 +401,10 @@ us-east-2 key for encryption/decryption.
 
             ./revoke_grant.sh
 
-You can now go back to the cloudwatch logs and see the application return to using the local key in us-east-2 for
+You can now go back to the CloudWatch logs and see the application return to using the CMK in us-east-2 for
 encryption and decryption.
 
-Another good place to see the multi region CMK use in effect is to visit the cloudtrail events for KMS. Here you
+Another good place to see the multi-CMK use in effect is to visit the CloudTrail events for KMS. Here you
 will be able to see each request that comes to KMS. You can use the debugging tips to help narrow done your
 results.
 
