@@ -73,10 +73,11 @@ class EncryptDecrypt(object):
         kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
         account_id = boto3.client('sts').get_caller_identity()['Account']
 
-        kms_master_key_provider.add_master_key(key_id_east)
         kms_master_key_provider.add_master_key(arn_template.format(
             region="us-west-2",
             account_id=account_id,
             alias=alias_west
         ))
+        kms_master_key_provider.add_master_key(key_id_east)
+
         return kms_master_key_provider

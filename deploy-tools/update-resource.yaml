@@ -1,0 +1,5 @@
+Code:
+  S3Bucket: !Ref S3Bucket
+  S3Key: !Ref ResourceCodeKey
+  S3ObjectVersion: !Ref ResourceCodeVersion
+Handler: deploy-tools.resource_handler.lambda_handler

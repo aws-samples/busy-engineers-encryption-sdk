@@ -26,14 +26,19 @@ DeployConfig = namedtuple(
         "static_resources_dir",
         "lambda_zip_file",
         "lambda_s3_key",
+        "resource_zip_file",
+        "resource_s3_key"
     ),
 )
 
 UNIQUE_TAG = "%UNIQUE%"
 LAMBDA_TAG = "%LAMBDACONFIG%"
+RESOURCE_TAG = "%RESOURCECONFIG%"
 PARAMETERS_TAG = "%PARAMETERS%"
 LAMBDA_BOOTSTRAP = os.path.join(HERE, "bootstrap-lambda.yaml")
+RESOURCE_BOOTSTRAP = os.path.join(HERE, "bootstrap-resource.yaml")
 LAMBDA_UPDATE = os.path.join(HERE, "update-lambda.yaml")
+RESOURCE_UPDATE = os.path.join(HERE, "update-resource.yaml")
 PARAMETERS_BOOTSTRAP = ""
 PARAMETERS_UPDATE = os.path.join(HERE, "update-parameters.yaml")
 WAITER_CONFIG = dict(Delay=10)
@@ -41,7 +46,7 @@ STATIC_ASSETS_PREFIX = "static-assets/"
 _LOGGER = logging.getLogger("Encryption SDK Workshop Deployer")
 
 
-def _collect_config(config_filename: Text, lambda_filename: Optional[Text]) -> DeployConfig:
+def _collect_config(config_filename: Text, lambda_filename: Optional[Text], resource_filename: Optional[Text]) -> DeployConfig:
     """Collect the config data from the specified file."""
     parser = ConfigParser()
     parser.read(config_filename)
@@ -49,6 +54,8 @@ def _collect_config(config_filename: Text, lambda_filename: Optional[Text]) -> D
     config_dir = os.path.dirname(os.path.abspath(config_filename))
     if lambda_filename is not None:
         lambda_filename = os.path.abspath(lambda_filename)
+    if resource_filename is not None:
+        resource_filename = os.path.abspath(resource_filename)
     return DeployConfig(
         cloudformation=boto3.client("cloudformation", region_name=parser["deploy"]["region"]),
         s3=boto3.client("s3", region_name=parser["deploy"]["region"]),
@@ -59,6 +66,8 @@ def _collect_config(config_filename: Text, lambda_filename: Optional[Text]) -> D
         static_resources_dir=os.path.join(config_dir, parser["resources"]["static_assets"]),
         lambda_zip_file=lambda_filename,
         lambda_s3_key=parser["deploy"]["lambda_s3_key"],
+        resource_zip_file=resource_filename,
+        resource_s3_key=parser["deploy"]["resource_s3_key"]
     )
 
 
@@ -69,6 +78,11 @@ def _lambda_body(stack_exists: bool) -> Iterable[Text]:
         for line in snippet:
             yield line.rstrip()
 
+def _resource_body(stack_exists: bool) -> Iterable[Text]:
+    filename = RESOURCE_UPDATE if stack_exists else RESOURCE_BOOTSTRAP
+    with open(filename, "r") as snippet:
+        for line in snippet:
+            yield line.rstrip()
 
 def _template_parameters(stack_exists: bool) -> Iterable[Text]:
     """Load the template parameters definition to inject into the CloudFormation template."""
@@ -86,6 +100,7 @@ def _template_lines(config: DeployConfig, stack_exists: bool) -> Iterable[Text]:
     deployment_id = uuid.uuid4().hex
     lambda_body = _lambda_body(stack_exists)
     parameters = _template_parameters(stack_exists)
+    resource_body = _resource_body(stack_exists)
 
     with open(config.template_file, "r") as template:
         for line in template:
@@ -99,7 +114,9 @@ def _template_lines(config: DeployConfig, stack_exists: bool) -> Iterable[Text]:
                 indent = _line[: _line.index(LAMBDA_TAG)]
                 for _lambda_line in lambda_body:
                     yield indent + _lambda_line
-
+            elif _line.strip() == RESOURCE_TAG:
+                for _resource_line in _resource_body:
+                    yield indent + _resource_line
             else:
                 yield _line
 
@@ -202,6 +219,9 @@ def _update_existing_stack(config: DeployConfig) -> None:
     with open(config.lambda_zip_file, "rb") as lambda_file:
         response = config.s3.put_object(Bucket=_bucket_name(config), Body=lambda_file, Key=config.lambda_s3_key)
 
+    with open(config.resource_zip_file, "rb") as resource_file:
+        resp_resource = config.s3.put_object(Bucket=_bucket_name(config), Body=resource_file, Key=config.resource_s3_key)
+
     # 2. collect template body
     template = _template_body(config, stack_exists=True)
 
@@ -212,6 +232,8 @@ def _update_existing_stack(config: DeployConfig) -> None:
         Parameters=[
             dict(ParameterKey="CodeKey", ParameterValue=config.lambda_s3_key),
             dict(ParameterKey="CodeVersion", ParameterValue=response["VersionId"]),
+            dict(ParameterKey="ResourceCodeKey", ParameterValue=config.resource_s3_key),
+            dict(ParameterKey="ResourceCodeVersion", ParameterValue=response["VersionId"] )
         ],
         Capabilities=["CAPABILITY_IAM"],
     )
@@ -284,10 +306,13 @@ def main(args=None) -> None:
     parser.add_argument("action", choices=_ACTIONS.keys(), help="What action should be taken?")
     parser.add_argument("--config", required=True, help="What config file should be used?")
     parser.add_argument("--lambda-zip", required=False, help="File containing built Lambda resource.")
+    parser.add_argument("--resource-zip", required=False, help="File containing build Lambda CMK create resource")
 
     parsed = parser.parse_args(args)
     if parsed.action in _ZIP_REQUIRED and parsed.lambda_zip is None:
         parsed.error('"--lambda-zip" must be provided for "{action}" action'.format(action=parsed.action))
+    if parsed.action in _ZIP_REQUIRED and parsed.response_zip is None:
+        parsed.error('"--resource-zip" must provide for "{action}" action'.format(action=parsed.action))
 
     config = _collect_config(parsed.config, parsed.lambda_zip)
     _ACTIONS[parsed.action](config)

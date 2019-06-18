@@ -17,6 +17,8 @@
 
 FILENAME='busy_engineers_workshop_python.zip'
 DIR='busy_engineers_workshop_artifacts'
+RESOURCE_FILENAME='resource_handler.zip'
+DEPLOY_DIR='deploy-tools'
 
 sudo yum install -y python36
 
@@ -30,3 +32,7 @@ deactivate
 cd dep_dir
 zip -r ../${FILENAME} .
 cd ..
+cd ${DEPLOY_DIR}
+zip ../${DEPLOY_DIR}/${RESOURCE_FILENAME} ../${DEPLOY_DIR}/resource_handler.py
+cd ..
+
