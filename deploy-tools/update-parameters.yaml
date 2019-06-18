@@ -7,11 +7,3 @@ Parameters:
     Type: String
     Description: >-
       The S3 object version containing the Lambda zip
-  ResourceCodeKey:
-    Type: String
-    Description: >-
-      The s3 object key containing the lambda resource zip
-  ResourceCodeVersion:
-    Type: String
-    Description: >-
-      The s3 object version containing the lambda resource zip
