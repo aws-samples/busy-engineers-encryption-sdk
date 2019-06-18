@@ -115,7 +115,7 @@ def _template_lines(config: DeployConfig, stack_exists: bool) -> Iterable[Text]:
                 for _lambda_line in lambda_body:
                     yield indent + _lambda_line
             elif _line.strip() == RESOURCE_TAG:
-                for _resource_line in _resource_body:
+                for _resource_line in resource_body:
                     yield indent + _resource_line
             else:
                 yield _line
@@ -233,7 +233,7 @@ def _update_existing_stack(config: DeployConfig) -> None:
             dict(ParameterKey="CodeKey", ParameterValue=config.lambda_s3_key),
             dict(ParameterKey="CodeVersion", ParameterValue=response["VersionId"]),
             dict(ParameterKey="ResourceCodeKey", ParameterValue=config.resource_s3_key),
-            dict(ParameterKey="ResourceCodeVersion", ParameterValue=response["VersionId"] )
+            dict(ParameterKey="ResourceCodeVersion", ParameterValue=resp_resource["VersionId"] )
         ],
         Capabilities=["CAPABILITY_IAM"],
     )
@@ -311,10 +311,10 @@ def main(args=None) -> None:
     parsed = parser.parse_args(args)
     if parsed.action in _ZIP_REQUIRED and parsed.lambda_zip is None:
         parsed.error('"--lambda-zip" must be provided for "{action}" action'.format(action=parsed.action))
-    if parsed.action in _ZIP_REQUIRED and parsed.response_zip is None:
+    if parsed.action in _ZIP_REQUIRED and parsed.resource_zip is None:
         parsed.error('"--resource-zip" must provide for "{action}" action'.format(action=parsed.action))
 
-    config = _collect_config(parsed.config, parsed.lambda_zip)
+    config = _collect_config(parsed.config, parsed.lambda_zip, parsed.resource_zip)
     _ACTIONS[parsed.action](config)
 
 
