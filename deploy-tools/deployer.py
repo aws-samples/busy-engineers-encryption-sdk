@@ -99,6 +99,7 @@ def _template_lines(config: DeployConfig, stack_exists: bool) -> Iterable[Text]:
                 indent = _line[: _line.index(LAMBDA_TAG)]
                 for _lambda_line in lambda_body:
                     yield indent + _lambda_line
+
             else:
                 yield _line
 
