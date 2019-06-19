@@ -16,22 +16,19 @@ This is the only module that you need to modify in the Busy Engineer's Guide to 
 """
 import base64
 import json
-import time
-import boto3
-
 import aws_encryption_sdk
 
 
 class EncryptDecrypt(object):
     """Encrypt and decrypt data."""
 
-    def __init__(self, key_id):
+    def __init__(self, key_id_east, key_id_west):
         """Set up materials manager and static values."""
         self._message_type = "message_type"
         self._type_order_inquiry = "order inquiry"
         self._timestamp = "rough timestamp"
         self._order_id = "order ID"
-        self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id)
+        self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id_east, key_id_west)
 
     def encrypt(self, data):
         """Encrypt data.
@@ -66,17 +63,10 @@ class EncryptDecrypt(object):
 
         return json.loads(plaintext)
 
-    def construct_multiregion_kms_master_key_provider(self, key_id_east):
-        alias_west = 'alias/busy-engineers-workshop-python-key-us-west-2'
-        arn_template = 'arn:aws:kms:{region}:{account_id}:{alias}'
-
+    def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
         kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
-        account_id = boto3.client('sts').get_caller_identity()['Account']
-
+        kms_master_key_provider.add_master_key(key_id_west)
         kms_master_key_provider.add_master_key(key_id_east)
-        kms_master_key_provider.add_master_key(arn_template.format(
-            region="us-west-2",
-            account_id=account_id,
-            alias=alias_west
-        ))
+
         return kms_master_key_provider
+
