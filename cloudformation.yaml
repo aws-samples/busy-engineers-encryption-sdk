@@ -186,67 +186,37 @@ Resources:
           def lambda_handler(event, context):
               try:
                   lg.info('Request Received: {}'.format(event))
-                  role = event['ResourceProperties']['Role']
                   region_name = event['ResourceProperties']['Region']
-                  alias = '{}'.format(event['ResourceProperties']['Alias'])
+                  policy = event['ResourceProperties']['Policy']
                   session = boto3.session.Session(region_name=region_name)
                   client = session.client('kms')
 
                   if event['RequestType'] == 'Create':
                       lg.info('Request Type: Create')
-                      state, keyId = create(region_name, client, alias, role)
-                      return send_response(event, context, 'SUCCESS')
+                      state, keyId = create(region_name, client, policy)
+                      return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
 
                   if event['RequestType'] == 'Delete':
+                      keyId = event['PhysicalResourceId']
                       lg.info('Request Type: Delete')
-                      target_key_id = get_key_id(client, alias)
-                      if target_key_id is None:
-                          return send_response(event, context, 'FAILED')
-                      state = delete(client, target_key_id)
-                      return send_response(event, context, 'SUCCESS')
+                      state = delete(client, keyId)
+                      return send_response(event, context, 'SUCCESS', keyId)
 
                   if event['RequestType'] == 'Update':
+                      keyId = event['PhysicalResourceId']
                       lg.info('Request Type: Update')
-                      response = client.list_aliases()
-                      aliases = response['Aliases']
-                      for a in aliases:
-                          if a['AliasName'] == alias:
-                              return send_response(event, context, 'SUCCESS')
-                      return send_response(event, context, 'FAILED')
+                      try:
+                          response = client.describe_key(KeyId=keyId)
+                          return send_response(event, context, 'SUCCESS', keyId)
+                      except Exception:
+                          return send_response(event, context, 'FAILED', keyId)gt
               except Exception as e:
                   lg.info(e)
 
-
-          def get_key_id(client, alias):
-              response = client.list_aliases()
-              aliases = response['Aliases']
-              for a in aliases:
-                  if a['AliasName'] == alias:
-                      key_id = a['TargetKeyId']
-                      return key_id
-              return None
-
-
-          def create(region_name, client, alias, role, **_):
+          def create(region_name, client, policy, **_):
               lg.info('entered create func')
               desc = 'Key for protecting critical data in {}'.format(region_name)
-              policy = """
-              {{
-                  "Version": "2012-10-17",
-                  "Id": "key-policy",
-                  "Statement": [
-                      {{
-                          "Sid": "Allow account-level IAM policies to apply to the key",
-                          "Effect": "Allow",
-                          "Principal": {{
-                              "AWS": "{}"
-                          }},
-                          "Action": "*",
-                          "Resource": "*"
-                      }}
-                  ]
-              }}
-              """.format(role)
+
               response = client.create_key(
                   Policy=policy,
                   Description=desc,
@@ -254,10 +224,6 @@ Resources:
                   BypassPolicyLockoutSafetyCheck=True
               )
               key_id = response['KeyMetadata']['Arn']
-              set_alias = client.create_alias(
-                  AliasName=alias,
-                  TargetKeyId=key_id
-              )
               return True, key_id
 
 
@@ -266,7 +232,7 @@ Resources:
                   KeyId=key_id
               )
               deletion_status = response['KeyMetadata']['KeyState']
-              if deletion_status == 'Enabled':
+              if deletion_status != 'PendingDeletion':
                   response = client.schedule_key_deletion(
                       KeyId=key_id,
                       PendingWindowInDays=7
@@ -274,13 +240,16 @@ Resources:
               return True
 
 
-          def send_response(event, context, resp_status):
+          def send_response(event, context, resp_status, keyId, data=None):
+              if data is None:
+                  data = {}
               resp_body = {'Status': resp_status,
                               'Reason': 'See the details in CloudWatch Log Stream: ' + context.log_stream_name,
-                              'PhysicalResourceId': context.log_stream_name,
+                              'PhysicalResourceId': keyId,
                               'StackId': event['StackId'],
                               'RequestId': event['RequestId'],
-                              'LogicalResourceId': event['LogicalResourceId']}
+                              'LogicalResourceId': event['LogicalResourceId'],
+                              'Data': data}
               lg.info('RESPONSE BODY:n' + json.dumps(resp_body))
               try:
                   req = requests.put(event['ResponseURL'], data=json.dumps(resp_body))
@@ -342,17 +311,6 @@ Resources:
               - '*'
             Resource: '*'
 
-  ## This alias isn't actually used, but makes the purpose of the key clearer in the console.
-  KMSAlias:
-    Type: 'AWS::KMS::Alias'
-    Properties:
-      AliasName: !Join 
-        - ''
-        - - alias/
-          - !Ref 'AWS::StackName'
-          - '-key-us-east-2'
-      TargetKeyId: !Ref KMSKey
-
   LambdaFunc:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -369,6 +327,7 @@ Resources:
           queue_url: !Ref SQSQueue
           use_cache: true
           log_group_name: !Ref CloudtrailLogGroup
+          cross_region_kms_key_id: !GetAtt CreateCustomerManagedKey2.KeyId
 
   MainAppPermissions:
     Type: 'AWS::Lambda::Permission'
@@ -426,9 +385,36 @@ Resources:
     Properties:
       ServiceToken: !GetAtt CustomerManagedKeyCreateLambdaFunc.Arn
       Region: "us-west-2"
-      Alias: !Join
-        - ''
-        - - alias/
-          - !Ref 'AWS::StackName'
-          - '-key-us-west-2'
-      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+      Policy: !Sub |
+
+        {
+          "Version": "2012-10-17",
+          "Id": "workshop-key-policy",
+          "Statement": [
+            {
+              "Sid": "Allow access for Key Administrators",
+              "Effect": "Allow",
+              "Principal": {"AWS": [
+                "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+              ]},
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+
