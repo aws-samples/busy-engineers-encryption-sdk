@@ -227,6 +227,10 @@ Resources:
                   BypassPolicyLockoutSafetyCheck=True
               )
               key_id = response['KeyMetadata']['Arn']
+              response = client.create_alias(
+                  AliasName='alias/busy-engineers-workshop-us-west-2-key',
+                  TargetKeyId=key_id
+              )
               return True, key_id
 
 
@@ -240,6 +244,10 @@ Resources:
                       response = client.schedule_key_deletion(
                           KeyId=key_id,
                           PendingWindowInDays=7
+                      )
+
+                      response = client.delete_alias(
+                          AliasName='alias/busy-engineers-workshop-us-west-2-key'
                       )
                       return True
               except Exception:
