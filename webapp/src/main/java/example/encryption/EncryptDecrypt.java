@@ -64,10 +64,10 @@ public class EncryptDecrypt {
     }
 
     @Inject
-    public EncryptDecrypt(@Named("keyId") final String keyId) {
+    public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
         kms = AWSKMSClient.builder().build();
-        this.masterKey = new KmsMasterKeyProvider(keyId)
-            .getMasterKey(keyId);
+        this.masterKey = new KmsMasterKeyProvider(keyIdEast)
+            .getMasterKey(keyIdEast);
     }
 
     public String encrypt(JsonNode data) throws IOException {
