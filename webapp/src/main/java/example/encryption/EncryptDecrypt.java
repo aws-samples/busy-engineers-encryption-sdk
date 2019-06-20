@@ -42,7 +42,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.amazonaws.encryptionsdk.MasterKeyProvider;
 import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
 
-
 /**
  * This class centralizes the logic for encryption and decryption of messages, to allow for easier modification.
  *
@@ -70,19 +69,13 @@ public class EncryptDecrypt {
     }
 
     @Inject
-    public EncryptDecrypt(@Named("keyId") final String keyId) {
+    public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
         kms = AWSKMSClient.builder().build();
-        //Get Master Keys from East and West
-        this.masterKeyEast = new KmsMasterKeyProvider(keyId)
-            .getMasterKey(keyId);
-        String[] arrOfStr = keyId.split(":");
-        String accountId = arrOfStr[4];
-        String keyIdWest = "arn:aws:kms:us-west-2:" + accountId +
-            ":alias/busy-engineers-encryption-sdk-key-us-west-2";
-        this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest).getMasterKey(keyIdWest);
-        //Construct Master Key Provider
+        this.masterKeyEast = new KmsMasterKeyProvider(keyIdEast)
+            .getMasterKey(keyIdEast);
+        this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest)
+            .getMasterKey(keyIdWest);
         this.provider = getKeyProvider(masterKeyEast, masterKeyWest);
-
     }
 
     public String encrypt(JsonNode data) throws IOException {
@@ -113,11 +106,10 @@ public class EncryptDecrypt {
         if (!Objects.equals(result.getEncryptionContext().get(K_MESSAGE_TYPE), TYPE_ORDER_INQUIRY)) {
             throw new IllegalArgumentException("Bad message type in decrypted message");
         }
+
         return MAPPER.readTree(result.getResult());
     }
-
     private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
-        return MultipleProviderFactory.buildMultiProvider(masterKeyEast, masterKeyWest);
+        return MultipleProviderFactory.buildMultiProvider(masterKeyWest, masterKeyEast);
     }
-
 }
