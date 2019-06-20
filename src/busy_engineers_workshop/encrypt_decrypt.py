@@ -64,9 +64,9 @@ class EncryptDecrypt(object):
         return json.loads(plaintext)
 
     def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
+        """Generate Multiple Master Key Provider."""
         kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
         kms_master_key_provider.add_master_key(key_id_west)
         kms_master_key_provider.add_master_key(key_id_east)
 
         return kms_master_key_provider
-

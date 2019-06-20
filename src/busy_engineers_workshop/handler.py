@@ -170,4 +170,3 @@ def handle_post(event):
         )
         _LOGGER.exception(message)
         return json_error(message)
-
