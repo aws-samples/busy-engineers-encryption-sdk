@@ -168,6 +168,118 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${RestAPI}/*
 
+  CustomerManagedKeyCreateLambdaFunc:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        # This is not actually a ZIP file, but cloudformation names it as such.
+        ZipFile: !Sub |
+          import json
+          import logging
+          import boto3
+          from botocore.vendored import requests
+
+          lg = logging.getLogger()
+          lg.setLevel(logging.INFO)
+
+
+          def lambda_handler(event, context):
+              try:
+                  lg.info('Request Received: {}'.format(event))
+                  region_name = event['ResourceProperties']['Region']
+                  policy = event['ResourceProperties']['Policy']
+                  session = boto3.session.Session(region_name=region_name)
+                  client = session.client('kms')
+
+                  if event['RequestType'] == 'Create':
+                      lg.info('Request Type: Create')
+                      state, keyId = create(region_name, client, policy)
+                      return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
+
+                  if event['RequestType'] == 'Delete':
+                      keyId = event['PhysicalResourceId']
+                      lg.info('Request Type: Delete')
+                      state = delete(client, keyId)
+                      if state:
+                          return send_response(event, context, 'SUCCESS', keyId)
+                      else:
+                          return send_response(event, context, 'FAILED', keyId)
+
+                  if event['RequestType'] == 'Update':
+                      keyId = event['PhysicalResourceId']
+                      lg.info('Request Type: Update')
+                      try:
+                          response = client.describe_key(KeyId=keyId)
+                          return send_response(event, context, 'SUCCESS', keyId)
+                      except Exception:
+                          return send_response(event, context, 'FAILED', keyId)
+              except Exception as e:
+                  lg.info(e)
+
+          def create(region_name, client, policy, **_):
+              lg.info('entered create func')
+              desc = 'Key for protecting critical data in {}'.format(region_name)
+
+              response = client.create_key(
+                  Policy=policy,
+                  Description=desc,
+                  KeyUsage='ENCRYPT_DECRYPT',
+                  BypassPolicyLockoutSafetyCheck=True
+              )
+              key_id = response['KeyMetadata']['Arn']
+              response = client.create_alias(
+                  AliasName='alias/busy-engineers-workshop-us-west-2-key',
+                  TargetKeyId=key_id
+              )
+              return True, key_id
+
+
+          def delete(client, key_id, **_):
+              try:
+                  response = client.describe_key(
+                      KeyId=key_id
+                  )
+                  deletion_status = response['KeyMetadata']['KeyState']
+                  if deletion_status != 'PendingDeletion':
+                      response = client.schedule_key_deletion(
+                          KeyId=key_id,
+                          PendingWindowInDays=7
+                      )
+
+                      response = client.delete_alias(
+                          AliasName='alias/busy-engineers-workshop-us-west-2-key'
+                      )
+                      return True
+              except Exception:
+                  return False
+
+
+          def send_response(event, context, resp_status, keyId, data=None):
+              if data is None:
+                  data = {}
+              resp_body = {'Status': resp_status,
+                              'Reason': 'See the details in CloudWatch Log Stream: ' + context.log_stream_name,
+                              'PhysicalResourceId': keyId,
+                              'StackId': event['StackId'],
+                              'RequestId': event['RequestId'],
+                              'LogicalResourceId': event['LogicalResourceId'],
+                              'Data': data}
+              lg.info('RESPONSE BODY:n' + json.dumps(resp_body))
+              try:
+                  req = requests.put(event['ResponseURL'], data=json.dumps(resp_body))
+                  if req.status_code != 200:
+                      lg.info(req.text)
+                      raise Exception('Did not receive 200')
+                  return
+              except requests.exceptions.RequestException as e:
+                  lg.info(e)
+                  raise
+      Handler: index.lambda_handler
+      MemorySize: 128
+      Role: !ImportValue "busy-engineers-workshop-LambdaRole"
+      Runtime: python3.6
+      Timeout: 5
+
   # API gateway stage and deployment configuration. We use a new logical ID for the deployment each time we update the
   # CF template; this is because the deployment captures the current state of the resource and method tree at the time
   # it is created, so to reflect any changes it needs to be recreated and the new deployment bound to the stage.
@@ -200,7 +312,7 @@ Resources:
   KMSKey:
     Type: 'AWS::KMS::Key'
     Properties:
-      Description: !Sub "KMS key for use in the cloudformation stack ${AWS::StackName}" 
+      Description: !Sub "KMS key for use in the cloudformation stack ${AWS::StackName}"
       KeyPolicy:
         Version: 2012-10-17
         Id: key-policy
@@ -212,17 +324,6 @@ Resources:
             Action:
               - '*'
             Resource: '*'
-
-  ## This alias isn't actually used, but makes the purpose of the key clearer in the console.
-  KMSAlias:
-    Type: 'AWS::KMS::Alias'
-    Properties:
-      AliasName: !Join 
-        - ''
-        - - alias/
-          - !Ref 'AWS::StackName'
-          - '-key'
-      TargetKeyId: !Ref KMSKey
 
   LambdaFunc:
     Type: 'AWS::Lambda::Function'
@@ -240,6 +341,7 @@ Resources:
           queue_url: !Ref SQSQueue
           use_cache: true
           log_group_name: !Ref CloudtrailLogGroup
+          cross_region_kms_key_id: !GetAtt CreateCustomerManagedKey2.KeyId
 
   MainAppPermissions:
     Type: 'AWS::Lambda::Permission'
@@ -275,7 +377,7 @@ Resources:
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref S3Bucket
-      PolicyDocument: 
+      PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Sid: AclCheck
@@ -291,3 +393,53 @@ Resources:
             Condition:
               StringEquals:
                 "s3:x-amz-acl": "bucket-owner-full-control"
+
+  CreateCustomerManagedKey2:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt CustomerManagedKeyCreateLambdaFunc.Arn
+      Region: "us-west-2"
+      Policy: !Sub |
+
+        {
+          "Version": "2012-10-17",
+          "Id": "workshop-key-policy",
+          "Statement": [
+            {
+              "Sid": "Allow access for Key Administrators",
+              "Effect": "Allow",
+              "Principal": {"AWS": [
+                "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+              ]},
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "Allow key access",
+              "Effect": "Allow",
+              "Principal": {"AWS": [
+                "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+              ]},
+              "Action": [
+                "kms:GenerateDataKey*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+
