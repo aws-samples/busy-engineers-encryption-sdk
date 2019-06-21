@@ -135,17 +135,14 @@ Resources:
           var encodedquery = querystring.escape(query);
           var kmslocation = "https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}" +
                          "#logEventViewer:group=${CloudtrailLogGroup};filter=" + encodedquery;
-
           var lambdalocation = "https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}" +
                          "#logEventViewer:group=/aws/lambda/${LambdaFunc}";
           exports.redirect = function(event, context, callback) {
               console.log('Received event: ' + JSON.stringify(event));
-
               var location = kmslocation;
               if (event.queryStringParameters && event.queryStringParameters.type === 'lambda') {
                   location = lambdalocation;
               }
-
               response = { isBase64Encoded: false,
                            statusCode: 303,
                            headers: {
@@ -178,11 +175,8 @@ Resources:
           import logging
           import boto3
           from botocore.vendored import requests
-
           lg = logging.getLogger()
           lg.setLevel(logging.INFO)
-
-
           def lambda_handler(event, context):
               try:
                   lg.info('Request Received: {}'.format(event))
@@ -190,12 +184,13 @@ Resources:
                   policy = event['ResourceProperties']['Policy']
                   session = boto3.session.Session(region_name=region_name)
                   client = session.client('kms')
-
                   if event['RequestType'] == 'Create':
-                      lg.info('Request Type: Create')
-                      state, keyId = create(region_name, client, policy)
-                      return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
-
+                      try:
+                          lg.info('Request Type: Create')
+                          state, keyId = create(region_name, client, policy)
+                          return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
+                      except Exception:
+                          return send_response(event, context, 'FAILED', keyId=None)
                   if event['RequestType'] == 'Delete':
                       keyId = event['PhysicalResourceId']
                       lg.info('Request Type: Delete')
@@ -204,7 +199,6 @@ Resources:
                           return send_response(event, context, 'SUCCESS', keyId)
                       else:
                           return send_response(event, context, 'FAILED', keyId)
-
                   if event['RequestType'] == 'Update':
                       keyId = event['PhysicalResourceId']
                       lg.info('Request Type: Update')
@@ -215,11 +209,10 @@ Resources:
                           return send_response(event, context, 'FAILED', keyId)
               except Exception as e:
                   lg.info(e)
-
+                  return send_response(event, context, 'Failed', keyId=None)
           def create(region_name, client, policy, **_):
               lg.info('entered create func')
               desc = 'Key for protecting critical data in {}'.format(region_name)
-
               response = client.create_key(
                   Policy=policy,
                   Description=desc,
@@ -232,8 +225,6 @@ Resources:
                   TargetKeyId=key_id
               )
               return True, key_id
-
-
           def delete(client, key_id, **_):
               try:
                   response = client.describe_key(
@@ -245,15 +236,12 @@ Resources:
                           KeyId=key_id,
                           PendingWindowInDays=7
                       )
-
                       response = client.delete_alias(
                           AliasName='alias/busy-engineers-workshop-us-west-2-key'
                       )
                       return True
               except Exception:
                   return False
-
-
           def send_response(event, context, resp_status, keyId, data=None):
               if data is None:
                   data = {}
@@ -400,7 +388,6 @@ Resources:
       ServiceToken: !GetAtt CustomerManagedKeyCreateLambdaFunc.Arn
       Region: "us-west-2"
       Policy: !Sub |
-
         {
           "Version": "2012-10-17",
           "Id": "workshop-key-policy",
@@ -430,7 +417,7 @@ Resources:
               "Resource": "*"
             },
             {
-              "Sid": "Allow key access",
+              "Sid": "Allow generate data key access",
               "Effect": "Allow",
               "Principal": {"AWS": [
                 "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
@@ -442,4 +429,5 @@ Resources:
             }
           ]
         }
+
 
