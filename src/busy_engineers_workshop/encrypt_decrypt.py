@@ -23,13 +23,13 @@ import aws_encryption_sdk
 class EncryptDecrypt(object):
     """Encrypt and decrypt data."""
 
-    def __init__(self, key_id):
+    def __init__(self, key_id_east, key_id_west):
         """Set up materials manager and static values."""
         self._message_type = "message_type"
         self._type_order_inquiry = "order inquiry"
         self._timestamp = "rough timestamp"
         self._order_id = "order ID"
-        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
 
     def encrypt(self, data):
         """Encrypt data.
