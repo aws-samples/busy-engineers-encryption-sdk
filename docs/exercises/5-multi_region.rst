@@ -348,6 +348,7 @@ in us-west-2.
 
     .. group-tab:: Java
 
+
         We have built a simple bash script that sets the grant, thereby disabling the use of the CMK in us-east-2.
         Run the script as below.
 
@@ -355,7 +356,7 @@ in us-west-2.
 
         .. code-block:: bash
 
-            ./assign_grant.sh
+            mvn deploy -P"assign-grant"
 
     .. group-tab:: Python
 
@@ -387,7 +388,7 @@ us-east-2 for encryption/decryption.
 
         .. code-block:: bash
 
-            ./revoke_grant.sh
+            mvn deploy -P"revoke-grant"
 
 
     .. group-tab:: Python
