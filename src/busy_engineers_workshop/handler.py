@@ -27,6 +27,7 @@ from busy_engineers_workshop.responses import bad_request, json_error, json_resp
 
 SQS_QUEUE_VAR = "queue_url"
 KMS_CMK_VAR = "kms_key_id"
+KMS_CROSS_REGION_CMK = "cross_region_kms_key_id"
 MIN_ROUNDS = 10
 MAX_MESSAGE_BATCH_SIZE = 50
 _LOGGER = logging.getLogger()
@@ -44,8 +45,9 @@ def _setup():
     _sqs_queue = sqs.Queue(queue)
 
     global _encrypt_decrypt
-    key_id = os.environ.get(KMS_CMK_VAR)
-    _encrypt_decrypt = EncryptDecrypt(key_id)
+    key_id_east = os.environ.get(KMS_CMK_VAR)
+    key_id_west = os.environ.get(KMS_CROSS_REGION_CMK)
+    _encrypt_decrypt = EncryptDecrypt(key_id_east, key_id_west)
 
     global _is_setup
     _is_setup = True
