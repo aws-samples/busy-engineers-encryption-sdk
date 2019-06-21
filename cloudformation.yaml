@@ -192,9 +192,12 @@ Resources:
                   client = session.client('kms')
 
                   if event['RequestType'] == 'Create':
-                      lg.info('Request Type: Create')
-                      state, keyId = create(region_name, client, policy)
-                      return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
+                      try:
+                          lg.info('Request Type: Create')
+                          state, keyId = create(region_name, client, policy)
+                          return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
+                      except Exception:
+                          return send_response(event, context, 'FAILED', keyId=None)
 
                   if event['RequestType'] == 'Delete':
                       keyId = event['PhysicalResourceId']
@@ -215,6 +218,8 @@ Resources:
                           return send_response(event, context, 'FAILED', keyId)
               except Exception as e:
                   lg.info(e)
+                  return send_response(event, context, 'Failed', keyId=None)
+
 
           def create(region_name, client, policy, **_):
               lg.info('entered create func')
