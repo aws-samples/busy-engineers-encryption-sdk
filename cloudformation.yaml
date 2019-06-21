@@ -435,7 +435,7 @@ Resources:
               "Resource": "*"
             },
             {
-              "Sid": "Allow key access",
+              "Sid": "Allow generate data key access",
               "Effect": "Allow",
               "Principal": {"AWS": [
                 "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
