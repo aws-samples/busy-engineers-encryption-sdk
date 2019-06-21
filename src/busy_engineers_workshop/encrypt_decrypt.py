@@ -23,12 +23,12 @@ import boto3
 class EncryptDecrypt(object):
     """Encrypt and decrypt data."""
 
-    def __init__(self, key_id):
+    def __init__(self, key_id_east, key_id_west):
         """Set up materials manager and static values."""
         self._message_type = "message_type"
         self._type_order_inquiry = "order inquiry"
         self._timestamp = "rough timestamp"
-        self.key_id = key_id
+        self.key_id = key_id_east
         self.kms = boto3.client("kms")
 
     def encrypt(self, data):
