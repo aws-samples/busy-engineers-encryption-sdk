@@ -287,8 +287,11 @@ Resources:
           import logging
           import boto3
           from botocore.vendored import requests
+
           lg = logging.getLogger()
           lg.setLevel(logging.INFO)
+
+
           def lambda_handler(event, context):
               try:
                   lg.info('Request Received: {}'.format(event))
@@ -296,10 +299,15 @@ Resources:
                   policy = event['ResourceProperties']['Policy']
                   session = boto3.session.Session(region_name=region_name)
                   client = session.client('kms')
+
                   if event['RequestType'] == 'Create':
-                      lg.info('Request Type: Create')
-                      state, keyId = create(region_name, client, policy)
-                      return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
+                      try:
+                          lg.info('Request Type: Create')
+                          state, keyId = create(region_name, client, policy)
+                          return send_response(event, context, 'SUCCESS', keyId, data={'KeyId': keyId})
+                      except Exception:
+                          return send_response(event, context, 'FAILED', keyId=None)
+
                   if event['RequestType'] == 'Delete':
                       keyId = event['PhysicalResourceId']
                       lg.info('Request Type: Delete')
@@ -308,6 +316,7 @@ Resources:
                           return send_response(event, context, 'SUCCESS', keyId)
                       else:
                           return send_response(event, context, 'FAILED', keyId)
+
                   if event['RequestType'] == 'Update':
                       keyId = event['PhysicalResourceId']
                       lg.info('Request Type: Update')
@@ -318,9 +327,13 @@ Resources:
                           return send_response(event, context, 'FAILED', keyId)
               except Exception as e:
                   lg.info(e)
+                  return send_response(event, context, 'Failed', keyId=None)
+
+
           def create(region_name, client, policy, **_):
               lg.info('entered create func')
               desc = 'Key for protecting critical data in {}'.format(region_name)
+
               response = client.create_key(
                   Policy=policy,
                   Description=desc,
@@ -333,6 +346,8 @@ Resources:
                   TargetKeyId=key_id
               )
               return True, key_id
+
+
           def delete(client, key_id, **_):
               try:
                   response = client.describe_key(
@@ -344,12 +359,15 @@ Resources:
                           KeyId=key_id,
                           PendingWindowInDays=7
                       )
+
                       response = client.delete_alias(
                           AliasName='alias/busy-engineers-workshop-us-west-2-key'
                       )
                       return True
               except Exception:
                   return False
+
+
           def send_response(event, context, resp_status, keyId, data=None):
               if data is None:
                   data = {}
