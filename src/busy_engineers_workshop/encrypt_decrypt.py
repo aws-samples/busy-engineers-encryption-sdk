@@ -24,13 +24,13 @@ import aws_encryption_sdk
 class EncryptDecrypt(object):
     """Encrypt and decrypt data."""
 
-    def __init__(self, key_id):
+    def __init__(self, key_id_east, key_id_west):
         """Set up materials manager and static values."""
         self._message_type = "message_type"
         self._type_order_inquiry = "order inquiry"
         self._timestamp = "rough timestamp"
         self._order_id = "order ID"
-        master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+        master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
         cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
         self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
             cache=cache, master_key_provider=master_key_provider, max_age=5.0 * 60.0, max_messages_encrypted=10
