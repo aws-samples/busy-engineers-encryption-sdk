@@ -62,10 +62,10 @@ public class EncryptDecrypt {
     }
 
     @Inject
-    public EncryptDecrypt(@Named("keyId") final String keyId) {
+    public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
         kms = AWSKMSClient.builder().build();
-        KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
-            .getMasterKey(keyId);
+        KmsMasterKey masterKey = new KmsMasterKeyProvider(keyIdEast)
+            .getMasterKey(keyIdEast);
 
         LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
         materialsManager = CachingCryptoMaterialsManager.newBuilder()
