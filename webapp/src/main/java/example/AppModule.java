@@ -34,8 +34,10 @@ import com.google.inject.multibindings.MapBinder;
 
 public class AppModule extends AbstractModule {
     @Override protected void configure() {
-        bind(String.class).annotatedWith(named("keyId"))
+        bind(String.class).annotatedWith(named("keyIdEast"))
                           .toInstance(System.getenv("kms_key_id"));
+        bind(String.class).annotatedWith(named("keyIdWest"))
+                          .toInstance(System.getenv("cross_region_kms_key_id"));
         bind(String.class).annotatedWith(named("queueUrl"))
                           .toInstance(System.getenv("queue_url"));
         bind(String.class).annotatedWith(named("logGroupName"))
