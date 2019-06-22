@@ -11,9 +11,36 @@ Here are instructions to prepare your environment to run the workshop.
 
 .. tabs::
 
+    .. group-tab:: AWS Classroom
+
+        If you are participating in the workshop in a classroom setting at an AWS-sponsored event, your classroom account will have the bootstrap IAM permissions already.
+
+    .. group-tab:: Your Own Account
+
+        If you plan to launch the workshop CloudFormation stacks in your own AWS account, this CloudFormation stack will bootstrap required permissions for you.
+
+        **Important:** Don't forget to check the acknowledgement that CloudFormation will be creating IAM resources for you.
+
+        |launch_permissions_cfn|
+
+        .. |launch_permissions_cfn| raw:: html
+
+            <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=BusyEngineersSdkIAMBase&templateURL=https://s3.amazonaws.com/busy-engineers-guide.reinvent-workshop.com/cloudformation/busy-engineers-encryption-sdk-iam.yaml"
+                target="_blank">
+
+        .. image:: ./images/cloudformation-launch-stack.png
+
+        |launch_permissions_cfn_link_close|
+
+        .. |launch_permissions_cfn_link_close| raw:: html
+
+            </a>
+
+.. tabs::
+
     .. group-tab:: Cloud9
 
-        We have provided CloudFormation templates that creates a Cloud9 workspace with all of the prerequisites, including a role with the required permissions.
+        We have provided CloudFormation templates that creates a Cloud9 workspace with all of the prerequisites to work with the workshop code and system.
 
         The setup is split across two stacks: the Initial Stack, for basic resources, and the Cloud9 stack, for an IDE.
 

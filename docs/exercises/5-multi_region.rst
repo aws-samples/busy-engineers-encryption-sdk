@@ -33,25 +33,31 @@ to Exercise 4. We'll assume that you've completed the code changes in
 This will give you a codebase that already uses the AWS Encryption SDK
 Note that any uncommitted changes you've made already will be lost.
 
-The :ref:`complete change<ex4-change>` is also available to help you view changes in context
+The :ref:`complete change<ex5-change>` is also available to help you view changes in context
 and compare your work.
 
 
-How multiple master key encryption works
-========================================
+Introduction to Multiple Master Key Encryption
+==============================================
 
-Encrypting application secrets under multiple regional KMS master keys
-increases availability. Many customers want to build systems that not
-only span multiple Availability Zones, but also multiple regions. KMS
-does not allow you to share KMS customer master keys (CMKs) in different
-regions.
+The Encryption SDK uses envelope encryption with data keys protected by KMS. One of the benefits of envelope encryption
+is that it supports granting access to multiple recipients of a message by granting access to multiple Customer Master
+Keys (CMKs) to decrypt the data key.
 
-There is a workaround to this limitation. By using envelope encryption,
-you can encrypt the data key with KMS CMKs in different regions. Applications
-running in each region can then use the local KMS endpoint to decrypt data
-faster and with higher availability. This also allows your data to be recovered
-using the CMK from another region if the KMS CMK of the current region has been corrupted,
-disabled, or deleted.
+One method to grant multiple accesses to an encrypted message is to encrypt a message's data key using multiple KMS CMKs.
+These CMKs can even be CMKs in different AWS accounts or different AWS regions. You explicitly configure which CMKs that
+your application will to use, and in which regions.
+
+Use cases for this pattern include cross-region replication for high availability and backup, as well as sharing data
+between different custodians who control different CMKs.
+
+For high availability use cases, encrypting the data key with KMS CMKs in different regions allows each region to have
+independent access to the encrypted data without requiring the other region to be accessible. It also allows data to be
+replicated between regions in its encrypted form without reencrypting it.
+
+The multiple CMKs don't have to be in different regions, though. Multiple CMKs from different accounts in the same
+region can be used, for example, to let different parties who own different CMKs independently manage access to the data.
+It is also a way to mitigate risk from deletion of a KMS CMK.
 
 Overview of exercise
 ====================
@@ -119,7 +125,7 @@ Now, let's add some imports:
 :ref:`master-keys` are used by the AWS Encryption SDK to protect your data.
 The first step to setting up multiple master keys is setting up a Master Key
 Provider. When setting up our Master Key Provider, we will be adding a CMK in
-the region the application runs in, us-east-2, as well as, in a different
+the region the application runs in, us-east-2, as well as in a different
 region, us-west-2. Please note, the CloudFormation template will create the CMKs
 for you in us-east-2 and us-west-2.
 
@@ -330,8 +336,8 @@ You can provide either a Master Key or a Master Key Provider to the client, and 
 .. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
 .. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-operations
 
-Illustrating Multi-CMKs Usage
-====================================
+Illustrating Multi-CMK Usage
+============================
 
 Now that you are done making the necessary code changes we will be leveraging grants to prevent usage of the CMK in
 us-east-2 to illustrate that encryption and decryption is still possible by using a CMK in another region. Grants are
@@ -348,6 +354,7 @@ in us-west-2.
 
     .. group-tab:: Java
 
+
         We have built a simple bash script that sets the grant, thereby disabling the use of the CMK in us-east-2.
         Run the script as below.
 
@@ -355,7 +362,7 @@ in us-west-2.
 
         .. code-block:: bash
 
-            ./assign_grant.sh
+            mvn deploy -P"assign-grant"
 
     .. group-tab:: Python
 
@@ -387,7 +394,7 @@ us-east-2 for encryption/decryption.
 
         .. code-block:: bash
 
-            ./revoke_grant.sh
+            mvn deploy -P"revoke-grant"
 
 
     .. group-tab:: Python
@@ -408,7 +415,7 @@ Another good place to see the multi-CMK use in effect is to visit the CloudTrail
 will be able to see each request that comes to KMS. You can use the debugging tips to help narrow done your
 results.
 
-.. _ex4-change:
+.. _ex5-change:
 
 Complete change
 ---------------
