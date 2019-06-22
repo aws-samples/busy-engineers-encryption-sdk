@@ -54,8 +54,8 @@ public class EncryptDecrypt {
     }
 
     @Inject
-    public EncryptDecrypt(@Named("keyId") final String keyId) {
-        // TODO - do something with keyId?
+    public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
+        // TODO - do something with keyIdEast?
     }
 
     public String encrypt(JsonNode data) throws IOException {
