@@ -25,7 +25,7 @@ Here are instructions to prepare your environment to run the workshop.
 
         .. |launch_permissions_cfn| raw:: html
 
-            <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=BusyEngineersSdkIAMBase&templateURL=https://s3.amazonaws.com/busy-engineers-guide.reinvent-workshop.com/cloudformation/busy-engineers-encryption-sdk-iam.yaml"
+            <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=busy-engineers-ee-iam&templateURL=https://s3.amazonaws.com/busy-engineers-guide.reinvent-workshop.com/cloudformation/busy-engineers-encryption-sdk-iam.yaml"
                 target="_blank">
 
         .. image:: ./images/cloudformation-launch-stack.png
