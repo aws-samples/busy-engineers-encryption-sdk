@@ -102,8 +102,8 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         .. code-block:: java
            :lineno-start: 67
 
-            KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
-                .getMasterKey(keyId);
+            KmsMasterKey masterKey = new KmsMasterKeyProvider(keyIdEast)
+                .getMasterKey(keyIdEast);
 
             LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
             materialsManager = CachingCryptoMaterialsManager.newBuilder()
@@ -245,7 +245,7 @@ View step-by-step changes in context, and compare your work if desired.
         .. code:: diff
 
             diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
-            index b544d59..1b75f06 100644
+            index 906a136..474c906 100644
             --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
             +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
             @@ -19,7 +19,6 @@ import javax.inject.Inject;
@@ -290,11 +290,11 @@ View step-by-step changes in context, and compare your work if desired.
                  private static class FormData {
             @@ -66,8 +64,16 @@ public class EncryptDecrypt {
                  @Inject
-                 public EncryptDecrypt(@Named("keyId") final String keyId) {
+                 public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
                      kms = AWSKMSClient.builder().build();
-            -        this.masterKey = new KmsMasterKeyProvider(keyId)
-            +        KmsMasterKey masterKey = new KmsMasterKeyProvider(keyId)
-                         .getMasterKey(keyId);
+            -        this.masterKey = new KmsMasterKeyProvider(keyIdEast)
+            +        KmsMasterKey masterKey = new KmsMasterKeyProvider(keyIdEast)
+                         .getMasterKey(keyIdEast);
             +
             +        LocalCryptoMaterialsCache cache = new LocalCryptoMaterialsCache(100);
             +        materialsManager = CachingCryptoMaterialsManager.newBuilder()
