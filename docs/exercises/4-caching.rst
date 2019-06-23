@@ -120,11 +120,11 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         .. code-block:: python
            :lineno-start: 33
 
-             master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
-                    cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
-                    self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
-                        cache=cache, master_key_provider=master_key_provider, max_age=5.0 * 60.0, max_messages_encrypted=10
-                    )
+            master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
+            cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
+            self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
+                cache=cache, master_key_provider=master_key_provider, max_age=5.0 * 60.0, max_messages_encrypted=10
+            )
 
 And finally, we'll use the ``materialsManager`` instead of our ``masterKey`` in our
 encrypt and decrypt operations:
