@@ -154,9 +154,9 @@ it in a field for later reference.
            :lineno-start: 58
 
             @Inject
-            public EncryptDecrypt(@Named("keyId") final String keyId) {
+            public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
                 kms = AWSKMSClient.builder().build();
-                this.keyId = keyId;
+                this.keyId = keyIdEast;
             }
 
         In ``encrypt()``, we'll then build and issue the request:
@@ -347,7 +347,7 @@ View step-by-step changes in context, and compare your work if desired.
         .. code:: diff
 
             diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
-            index 5013095..29b6f71 100644
+            index ab8e1d1..51660ec 100644
             --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
             +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
             @@ -44,6 +44,11 @@ import com.fasterxml.jackson.databind.JsonNode;
@@ -365,10 +365,10 @@ View step-by-step changes in context, and compare your work if desired.
             @@ -55,7 +60,8 @@ public class EncryptDecrypt {
 
                  @Inject
-                 public EncryptDecrypt(@Named("keyId") final String keyId) {
-            -        // TODO - do something with keyId?
+                 public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
+            -        // TODO - do something with keyIdEast?
             +        kms = AWSKMSClient.builder().build();
-            +        this.keyId = keyId;
+            +        this.keyId = keyIdEast;
                  }
 
                  public String encrypt(JsonNode data) throws IOException {
