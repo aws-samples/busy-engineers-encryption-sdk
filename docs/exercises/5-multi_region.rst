@@ -376,7 +376,7 @@ us-east-2.
 
         .. code-block:: bash
 
-            ./revoke_grant.sh
+            tox -e revoke-grant
 
 You can now go back to the CloudWatch logs and see the application continue to successfully use the key in us-east-2,
 while the us-west-2 key will start failing Decrypt permissions checks again now that the grant is gone.
