@@ -120,13 +120,10 @@ Then, we'll replace our MasterKey field with a CryptoMaterialsManager:
         .. code-block:: python
            :lineno-start: 33
 
-            master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
             cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
             self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
-                cache=cache,
-                master_key_provider=master_key_provider,
-                max_age=5.0 * 60.0,
-                max_messages_encrypted=10
+                cache=cache, master_key_provider=master_key_provider, max_age=5.0 * 60.0, max_messages_encrypted=10
             )
 
 And finally, we'll use the ``materialsManager`` instead of our ``masterKey`` in our
@@ -336,7 +333,7 @@ View step-by-step changes in context, and compare your work if desired.
         .. code:: diff
 
             diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
-            index b1cef27..0609bc6 100644
+            index 4e153a3..c1f4456 100644
             --- a/src/busy_engineers_workshop/encrypt_decrypt.py
             +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
             @@ -16,6 +16,7 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
@@ -351,8 +348,8 @@ View step-by-step changes in context, and compare your work if desired.
                      self._type_order_inquiry = "order inquiry"
                      self._timestamp = "rough timestamp"
                      self._order_id = "order ID"
-            -        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
-            +        master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            -        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
+            +        master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
             +        cache = aws_encryption_sdk.LocalCryptoMaterialsCache(capacity=100)
             +        self.materials_manager = aws_encryption_sdk.CachingCryptoMaterialsManager(
             +            cache=cache, master_key_provider=master_key_provider, max_age=5.0 * 60.0, max_messages_encrypted=10
@@ -362,31 +359,30 @@ View step-by-step changes in context, and compare your work if desired.
                      """Encrypt data.
             @@ -38,12 +43,12 @@ class EncryptDecrypt(object):
                      :returns: Base64-encoded, encrypted data
-                         :rtype: str
-                         """
-                -        encryption_context = {self._message_type: self._type_order_inquiry}
-                -        order_id = data.get("orderid", "")
-                -        if order_id:
-                -            encryption_context[self._order_id] = order_id
-                +        encryption_context = {
-                +            self._message_type: self._type_order_inquiry,
-                +            self._timestamp: str(int(time.time() / 3600.0)),
-                +        }
-                         ciphertext, _header = aws_encryption_sdk.encrypt(
-                -            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
-                +            source=json.dumps(data), materials_manager=self.materials_manager, encryption_context=encryption_context
-                         )
-                         return base64.b64encode(ciphertext).decode("utf-8")
+                     :rtype: str
+                     """
+            -        encryption_context = {self._message_type: self._type_order_inquiry}
+            -        order_id = data.get("orderid", "")
+            -        if order_id:
+            -            encryption_context[self._order_id] = order_id
+            +        encryption_context = {
+            +            self._message_type: self._type_order_inquiry,
+            +            self._timestamp: str(int(time.time() / 3600.0)),
+            +        }
+                     ciphertext, _header = aws_encryption_sdk.encrypt(
+            -            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
+            +            source=json.dumps(data), materials_manager=self.materials_manager, encryption_context=encryption_context
+                     )
+                     return base64.b64encode(ciphertext).decode("utf-8")
 
-                @@ -54,7 +59,7 @@ class EncryptDecrypt(object):
-                         :returns: JSON-decoded, decrypted data
-                         """
-                         ciphertext = base64.b64decode(data)
-                -        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
-                +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, materials_manager=self.materials_manager)
+            @@ -54,7 +59,7 @@ class EncryptDecrypt(object):
+                     :returns: JSON-decoded, decrypted data
+                     """
+                     ciphertext = base64.b64decode(data)
+            -        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
+            +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, materials_manager=self.materials_manager)
 
-                         try:
-                             if header.encryption_context[self._message_type] != self._type_order_inquiry:
-
+                     try:
+                         if header.encryption_context[self._message_type] != self._type_order_inquiry:
 
 

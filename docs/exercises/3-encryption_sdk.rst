@@ -258,7 +258,7 @@ we won't need to keep around the key ID, so we can discard that value.
         .. code-block:: python
            :lineno-start: 32
 
-            self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
 
 
 The actual encryption process is much simpler than with KMS. We'll keep the
@@ -566,9 +566,8 @@ View step-by-step changes in context, and compare your work if desired.
     .. group-tab:: Python
 
         .. code:: diff
-
             diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
-            index b7e8e07..b1cef27 100644
+            index 2ce36c9..4e153a3 100644
             --- a/src/busy_engineers_workshop/encrypt_decrypt.py
             +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
             @@ -17,7 +17,7 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
@@ -584,44 +583,43 @@ View step-by-step changes in context, and compare your work if desired.
                      self._message_type = "message_type"
                      self._type_order_inquiry = "order inquiry"
                      self._timestamp = "rough timestamp"
-            -        self.key_id = key_id
+            -        self.key_id = key_id_east
             -        self.kms = boto3.client("kms")
             +        self._order_id = "order ID"
-            +        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id])
+            +        self.master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider(key_ids=[key_id_east])
 
                  def encrypt(self, data):
                      """Encrypt data.
             @@ -39,9 +39,12 @@ class EncryptDecrypt(object):
                      :rtype: str
-                         """
-                         encryption_context = {self._message_type: self._type_order_inquiry}
-                -        plaintext = json.dumps(data).encode("utf-8")
-                -        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
-                -        ciphertext = response["CiphertextBlob"]
-                +        order_id = data.get("orderid", "")
-                +        if order_id:
-                +            encryption_context[self._order_id] = order_id
-                +        ciphertext, _header = aws_encryption_sdk.encrypt(
-                +            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
-                +        )
-                         return base64.b64encode(ciphertext).decode("utf-8")
+                     """
+                     encryption_context = {self._message_type: self._type_order_inquiry}
+            -        plaintext = json.dumps(data).encode("utf-8")
+            -        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
+            -        ciphertext = response["CiphertextBlob"]
+            +        order_id = data.get("orderid", "")
+            +        if order_id:
+            +            encryption_context[self._order_id] = order_id
+            +        ciphertext, _header = aws_encryption_sdk.encrypt(
+            +            source=json.dumps(data), key_provider=self.master_key_provider, encryption_context=encryption_context
+            +        )
+                     return base64.b64encode(ciphertext).decode("utf-8")
 
-                     def decrypt(self, data):
-                @@ -51,8 +54,12 @@ class EncryptDecrypt(object):
-                         :returns: JSON-decoded, decrypted data
-                         """
-                         ciphertext = base64.b64decode(data)
-                -        encryption_context = {self._message_type: self._type_order_inquiry}
-                -        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
-                -        plaintext = response["Plaintext"]
-                +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
-                +
-                +        try:
-                +            if header.encryption_context[self._message_type] != self._type_order_inquiry:
-                +                raise KeyError()  # overloading KeyError to use the same exit whether wrong or missing
-                +        except KeyError:
-                +            raise ValueError("Bad message type in decrypted message")
+                 def decrypt(self, data):
+            @@ -51,8 +54,12 @@ class EncryptDecrypt(object):
+                     :returns: JSON-decoded, decrypted data
+                     """
+                     ciphertext = base64.b64decode(data)
+            -        encryption_context = {self._message_type: self._type_order_inquiry}
+            -        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
+            -        plaintext = response["Plaintext"]
+            +        plaintext, header = aws_encryption_sdk.decrypt(source=ciphertext, key_provider=self.master_key_provider)
+            +
+            +        try:
+            +            if header.encryption_context[self._message_type] != self._type_order_inquiry:
+            +                raise KeyError()  # overloading KeyError to use the same exit whether wrong or missing
+            +        except KeyError:
+            +            raise ValueError("Bad message type in decrypted message")
 
-                         return json.loads(plaintext)
-
+                     return json.loads(plaintext)
 

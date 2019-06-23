@@ -215,6 +215,7 @@ it in a field for later reference.
         .. code-block:: python
            :lineno-start: 30
 
+            self.key_id = key_id_east
             self.kms = boto3.client("kms")
 
         In ``encrypt()`` we'll then call KMS and process the response.
@@ -424,7 +425,7 @@ View step-by-step changes in context, and compare your work if desired.
         .. code:: diff
 
             diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
-            index 0e34c26..b7e8e07 100644
+            index 5ec55c3..2ce36c9 100644
             --- a/src/busy_engineers_workshop/encrypt_decrypt.py
             +++ b/src/busy_engineers_workshop/encrypt_decrypt.py
             @@ -17,6 +17,8 @@ This is the only module that you need to modify in the Busy Engineer's Guide to
@@ -439,35 +440,35 @@ View step-by-step changes in context, and compare your work if desired.
             @@ -27,6 +29,7 @@ class EncryptDecrypt(object):
                      self._type_order_inquiry = "order inquiry"
                      self._timestamp = "rough timestamp"
-                     self.key_id = key_id
+                     self.key_id = key_id_east
             +        self.kms = boto3.client("kms")
 
                  def encrypt(self, data):
                      """Encrypt data.
             @@ -35,8 +38,11 @@ class EncryptDecrypt(object):
                      :returns: Base64-encoded, encrypted data
-                         :rtype: str
-                         """
-                +        encryption_context = {self._message_type: self._type_order_inquiry}
-                         plaintext = json.dumps(data).encode("utf-8")
-                -        return base64.b64encode(plaintext).decode("utf-8")
-                +        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
-                +        ciphertext = response["CiphertextBlob"]
-                +        return base64.b64encode(ciphertext).decode("utf-8")
+                     :rtype: str
+                     """
+            +        encryption_context = {self._message_type: self._type_order_inquiry}
+                     plaintext = json.dumps(data).encode("utf-8")
+            -        return base64.b64encode(plaintext).decode("utf-8")
+            +        response = self.kms.encrypt(KeyId=self.key_id, Plaintext=plaintext, EncryptionContext=encryption_context)
+            +        ciphertext = response["CiphertextBlob"]
+            +        return base64.b64encode(ciphertext).decode("utf-8")
 
-                     def decrypt(self, data):
-                         """Decrypt data.
-                @@ -44,5 +50,9 @@ class EncryptDecrypt(object):
-                         :param bytes data: Base64-encoded, encrypted data
-                         :returns: JSON-decoded, decrypted data
-                         """
-                -        plaintext = base64.b64decode(data).decode("utf-8")
-                +        ciphertext = base64.b64decode(data)
-                +        encryption_context = {self._message_type: self._type_order_inquiry}
-                +        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
-                +        plaintext = response["Plaintext"]
-                +
-                         return json.loads(plaintext)
+                 def decrypt(self, data):
+                     """Decrypt data.
+            @@ -44,5 +50,9 @@ class EncryptDecrypt(object):
+                     :param bytes data: Base64-encoded, encrypted data
+                     :returns: JSON-decoded, decrypted data
+                     """
+            -        plaintext = base64.b64decode(data).decode("utf-8")
+            +        ciphertext = base64.b64decode(data)
+            +        encryption_context = {self._message_type: self._type_order_inquiry}
+            +        response = self.kms.decrypt(CiphertextBlob=ciphertext, EncryptionContext=encryption_context)
+            +        plaintext = response["Plaintext"]
+            +
+                     return json.loads(plaintext)
 
 Extra credit
 ============
