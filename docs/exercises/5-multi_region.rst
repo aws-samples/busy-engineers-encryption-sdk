@@ -349,8 +349,7 @@ in us-west-2.
     .. group-tab:: Java
 
         We have built a simple bash script that sets the grant, thereby disabling the use of the CMK in us-east-2.
-        This bash script can be found in ``/busy-engineers-encryption-sdk/webapp/src``. Navigate to the folder and run the
-        script as below on the Cloud9 CLI.
+        Run the script as below.
 
         Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
@@ -361,8 +360,7 @@ in us-west-2.
     .. group-tab:: Python
 
         We have built a simple python script that sets the grant, thereby disabling the use of the CMK in us-east-2.
-        This bash script can be found in ``/busy-engineers-encryption-sdk/src``. Navigate to the folder and run the
-        script as below on the Cloud9 CLI.
+        Run the script on the Cloud9 CLI as below.
 
         Note, be sure to save the grant_id that outputs to the CLI. You will need this to revoke the grant.
 
@@ -383,10 +381,9 @@ us-east-2 for encryption/decryption.
     .. group-tab:: Java
 
         We have built a simple python script that revokes the grant, thereby enabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
-        This bash script can be found in ``/busy-engineers-encryption-sdk/webapp/src``. Navigate to the folder and be sure to
-        put the grant_id you saved from assigning the grant in the shell script and run the script on the Cloud9 CLI
-        as below.
+        Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
         .. code-block:: bash
 
@@ -396,10 +393,9 @@ us-east-2 for encryption/decryption.
     .. group-tab:: Python
 
         We have built a simple python script that revokes the grant, thereby enabling the use of the CMK in us-east-2.
+        Run the script on the Cloud9 CLI as below.
 
-        This bash script can be found in ``/busy-engineers-encryption-sdk/src``. Navigate to the folder and be sure to
-        put the grant_id you saved from assigning the grant in the shell script and run the script on the Cloud9 CLI
-        as below.
+        Be sure to put the grant_id you saved from assigning the grant in the shell script and run as below.
 
         .. code-block:: bash
 
