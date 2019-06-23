@@ -68,7 +68,7 @@ public class AssignGrantPlugin extends AbstractMojo {
             // Actually create the grant on the CMK
             CreateGrantRequest grantRequest = new CreateGrantRequest()
                                                     .withKeyId(keyArn)
-                                                    .withOperations("Encrypt", "Decrypt", "CreateGrant", "RetireGrant")
+                                                    .withOperations("Encrypt", "Decrypt")
                                                     .withGranteePrincipal(lambdaRoleArn);
 
             CreateGrantResult grantResult = kmsClient.createGrant(grantRequest);
