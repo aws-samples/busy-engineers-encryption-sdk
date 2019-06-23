@@ -43,7 +43,7 @@
         <cfdeploy.assetsDirectory>${project.basedir}/static-assets</cfdeploy.assetsDirectory>
         <cfdeploy.jarPath>${project.basedir}/target/webapp.jar</cfdeploy.jarPath>
         <cfdeploy.destroy>false</cfdeploy.destroy>
-        <grantId.path>${project.basedir}/grant_id.txt</grantId.path>
+        <grantId.path>${project.basedir}/build-tools/grant_id.txt</grantId.path>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
