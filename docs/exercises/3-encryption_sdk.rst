@@ -248,8 +248,8 @@ we won't need to keep around the key ID, so we can discard that value.
         .. code-block:: java
            :lineno-start: 69
 
-            this.masterKey = new KmsMasterKeyProvider(keyId)
-                .getMasterKey(keyId);
+            this.masterKey = new KmsMasterKeyProvider(keyIdEast)
+                .getMasterKey(keyIdEast);
 
     .. group-tab:: Python
 
@@ -382,9 +382,8 @@ Master Key Providers supply Master Keys to the client.
 
 You can provide either a Master Key or a Master Key Provider to the client, and the client will handle obtaining the Master Key it requires.
 
-
-.. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
-.. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-operations
+.. _Master Keys: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key
+.. _Master Key Providers: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#master-key-provider
 
 Adding additional audit metadata to your Encryption Context
 ===========================================================
@@ -477,7 +476,7 @@ View step-by-step changes in context, and compare your work if desired.
                          <groupId>com.amazonaws</groupId>
                          <artifactId>aws-java-sdk-sqs</artifactId>
             diff --git a/webapp/src/main/java/example/encryption/EncryptDecrypt.java b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
-            index 29b6f71..b544d59 100644
+            index 51660ec..906a136 100644
             --- a/webapp/src/main/java/example/encryption/EncryptDecrypt.java
             +++ b/webapp/src/main/java/example/encryption/EncryptDecrypt.java
             @@ -27,6 +27,10 @@ import java.util.concurrent.TimeUnit;
@@ -505,11 +504,11 @@ View step-by-step changes in context, and compare your work if desired.
                  private static class FormData {
             @@ -61,7 +66,8 @@ public class EncryptDecrypt {
                  @Inject
-                 public EncryptDecrypt(@Named("keyId") final String keyId) {
+                 public EncryptDecrypt(@Named("keyIdEast") final String keyIdEast, @Named("keyIdWest") final String keyIdWest) {
                      kms = AWSKMSClient.builder().build();
-            -        this.keyId = keyId;
-            +        this.masterKey = new KmsMasterKeyProvider(keyId)
-            +            .getMasterKey(keyId);
+            -        this.keyId = keyIdEast;
+            +        this.masterKey = new KmsMasterKeyProvider(keyIdEast)
+            +            .getMasterKey(keyIdEast);
                  }
 
                  public String encrypt(JsonNode data) throws IOException {
