@@ -44,15 +44,15 @@ The Encryption SDK uses envelope encryption with data keys protected by KMS. One
 is that it supports methods of encrypting the message to explicitly grant access to holders of different keys.
 
 One method to grant multiple accesses to an encrypted message is to encrypt a message's data key using multiple KMS CMKs.
-These CMKs can even be CMKs in different AWS accounts or different AWS regions. You explicitly configure which CMKs that
-your application will to use, and in which regions.
+These CMKs can even be CMKs in different AWS accounts or different AWS regions.
+You explicitly configure which CMKs, in which regions, your application will use.
 
 Use cases for this pattern include cross-region replication for high availability and backup, as well as sharing data
 between different custodians who control different CMKs.
 
 For high availability use cases, encrypting the data key with KMS CMKs in different regions allows each region to have
 independent access to the encrypted data without requiring the other region to be accessible. It also allows data to be
-replicated between regions in its encrypted form without reencrypting it.
+replicated between regions in its encrypted form without re-encrypting it.
 
 The multiple CMKs don't have to be in different regions, though. Multiple CMKs from different accounts in the same
 region can be used, for example, to let different parties who own different CMKs independently manage access to the data.
@@ -121,7 +121,7 @@ Now, let's add some imports:
 In Exercise 3, you configured a Master Key and Master Key Provider for a single KMS CMK. Now you will extend this to
 configure a Multiple Master Key Provider with a CMK in the demo application's primary region, us-east-2, as well as
 in a secondary region, us-west-2. The CloudFormation template automatically creates these two CMKs for you, so now
-all that's left is to configure the SDK to use them both.
+all that's left is to configure the Encryption SDK to use them both.
 
 .. tabs::
 
@@ -159,15 +159,16 @@ Now you have a Master Key Provider with multiple Master Keys configured. Using t
 use multiple CMKs for cryptographic operations.
 
 Note that the us-west-2 key is the first configured key. For encrypt operations, the first configured Master Key
-is significant: it is the key used for the ``GenerateDataKey`` operation. Any other configured keys are used to
-re-encrypt that data key, with those additional encrypted copies written to the envelope in the `SDK's message format`_.
+is significant: it is the key used for the ``kms:GenerateDataKey`` operation. Any other configured keys are used to
+re-encrypt that data key, with those additional encrypted copies written to the envelope in
+the `Encryption SDK's message format`_.
 
-For decrypt operations, the configured Master Keys determine which CMKs that the SDK may attempt to use to
+For decrypt operations, the configured Master Keys determine which CMKs the Encryption SDK may attempt to use to
 decrypt the data key.
 
 You'll see more about each of these behaviors in a minute.
 
-.. _SDK's message format: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html
+.. _Encryption SDK's message format: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html
 
 .. tabs::
 
@@ -240,15 +241,15 @@ You'll see more about each of these behaviors in a minute.
 
     .. group-tab:: Python
 
-        Encrypt is already using the ``master_key_provider``, so it automatically picks up the change to use multiple
+        Encrypt is already using the ``KMSMasterKeyProvider``, so it automatically picks up the change to use multiple
         Master Keys / CMKs.
 
 Recall that your Master Key Provider is configured with the us-west-2 CMK first, and the us-east-2 CMK second. Now what
-will happen on ``encrypt`` is that the SDK will call ``GenerateDataKey`` on the us-west-2 CMK, and receive a new
-data key from KMS in response. The SDK will call ``Encrypt`` on that data key in us-east-2, producing a new encrypted
+will happen on ``encrypt`` is that the Encryption SDK will call ``kms:GenerateDataKey`` on the us-west-2 CMK, and receive a new
+data key from KMS in response. The Encryption SDK will call ``kms:Encrypt`` on that data key in us-east-2, producing a new encrypted
 copy of the same plaintext data key. Your message will be encrypted with that plaintext data key, producing your message
 ciphertext. Then both the us-west-2 encrypted data key and the us-east-2 encrypted data key will be written alongside
-that ciphertext in the envelope-encrypted SDK message format.
+that ciphertext in the envelope-encrypted Encryption SDK message format.
 
 Now that message can be stored or transmitted wherever it needs to go securely, and access to either the us-west-2 key
 or the us-east-2 key is sufficient to access the plaintext.
@@ -278,17 +279,17 @@ or the us-east-2 key is sufficient to access the plaintext.
 
     .. group-tab:: Python
 
-        Decrypt is already using the ``master_key_provider``, so it automatically picks up the change to use multiple
+        Decrypt is already using the ``KMSMasterKeyProvider``, so it automatically picks up the change to use multiple
         Master Keys / CMKs.
 
-Now that you have configured your SDK to use multiple Master Keys, the SDK can try multiple CMKs on decrypt.
-This means that if the SDK tries to use a CMK but can't, perhaps because it does not have permissions to use that CMK,
+Now that you have configured your Encryption SDK to use multiple Master Keys, the Encryption SDK can try multiple CMKs on decrypt.
+This means that if the Encryption SDK tries to use a CMK but can't, perhaps because it does not have permissions to use that CMK,
 it has another CMK option to try before giving up.
 
-When using KMS CMKs, recall that KMS checks access permissions for every call, and writes an audit log entry both on
-success and on failure. This behavior is completely independent from the configuration of the SDK. Your SDK configuration
+When using KMS CMKs, recall that KMS checks access permissions for every call and writes an audit log entry both on
+success and on failure. This behavior is completely independent from the configuration of the Encryption SDK. Your Encryption SDK configuration
 constrains what your application behavior will be, but your KMS configuration is the final arbiter of which operations
-will succeed and which will fail. Either way, KMS always logs each attempt to use a CMK.
+will succeed and which will fail. Either way, KMS always writes a log entry to CloudTrail on every attempt to use a CMK.
 
 You'll see this behavior in action in just a minute. For now, use the :ref:`Build tool commands` to deploy your
 application again.
@@ -296,15 +297,15 @@ application again.
 Illustrating Multi-CMK Usage
 ============================
 
-Now that you have configured your SDK to use multiple Master Keys, you'll work through an example scenario of how this
+Now that you have configured your client to use multiple Master Keys, you'll work through an example scenario of how this
 behavior can work in practice.
 
-The us-west-2 key that we set up for you has a restricted set of permissions. You may call ``GenerateDataKey``, but not
-``Encrypt`` or ``Decrypt``. When you send a message through your web application, you will see two KMS calls now: one for
-the ``GenerateDataKey`` in us-west-2, and one for the ``Encrypt`` call in us-east-2.
+The us-west-2 key that we set up for you has a restricted set of permissions. You may call ``kms:GenerateDataKey``, but not
+``kms:Encrypt`` or ``kms:Decrypt``. When you send a message through your web application, you will see two KMS calls now: one for
+the ``kms:GenerateDataKey`` in us-west-2, and one for the ``kms:Encrypt`` call in us-east-2.
 
-If you use the receive message function and observe your KMS logs right now, you will see the SDK attempting to use your
-us-west-2 CMK for ``Decrypt``, failing, and moving on to your us-east-2 CMK.
+If you use the receive message function and observe your KMS logs right now, you will see the Encryption SDK attempting to use your
+us-west-2 CMK for ``kms:Decrypt``, failing, and moving on to your us-east-2 CMK.
 
 Give that a test run by sending a few test messages now and checking your application logs and your CloudTrail logs for
 your us-west-2 CMK and your us-east-2 CMK. Come back and proceed further after you've had a chance to see that in action.
@@ -320,11 +321,10 @@ your us-west-2 CMK and your us-east-2 CMK. Come back and proceed further after y
 Adding CMK access through Grants
 --------------------------------
 
-One of the access control primitives offered by KMS is `Grants`_. Grants are designed for modular permissions delegations,
-including through programmatic updates. Grants work in conjunction with Key Policies as part of AWS KMS' access control
-features.
+One of the access control primitives offered by KMS is `Grants`_. Grants are designed for modular permissions definitions
+and work in conjunction with Key Policies as part of AWS KMS' access control features.
 
-Now you'll use KMS Grants to programmatically grant yourself permission to use the us-west-2 CMK for more operations,
+Now you'll use KMS Grants to give yourself permission to use the us-west-2 CMK for more operations
 and observe in logs how the behavior changes. Then you can revoke the permission and watch the behavior change again.
 
 The grant assignment and revocation are already scripted for you, but you're welcome to take a peek to see what it looks
@@ -387,14 +387,14 @@ will be able to see each request that comes to KMS, whether successful or unsucc
 Summing up
 ==========
 
-Even though permission for your application to use us-west-2's CMK has been added and revoked at this point, your
+Even though ``kms:Decrypt`` permission for your application to use us-west-2's CMK has been added and revoked at this point, your
 application has continued to function the entire time. In addition to your application logs, KMS also recorded audit
-information for every call it received.
+information in CloudTrail for every call it received.
 
 You can use these same primitives in your real-world deployments to finely control access to your application and to
 audit how and why data is being accessed.
 
-Feel free to experiment with adding, removing, and changing permissions, and see how your application behavior changes.
+Feel free to experiment with adding, removing, and changing permissions to see how your application behavior changes.
 
 You can use the :ref:`Debugging Tips` for additional analysis options for your logs.
 
