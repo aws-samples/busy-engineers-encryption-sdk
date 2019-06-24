@@ -566,6 +566,7 @@ View step-by-step changes in context, and compare your work if desired.
     .. group-tab:: Python
 
         .. code:: diff
+
             diff --git a/src/busy_engineers_workshop/encrypt_decrypt.py b/src/busy_engineers_workshop/encrypt_decrypt.py
             index 2ce36c9..4e153a3 100644
             --- a/src/busy_engineers_workshop/encrypt_decrypt.py

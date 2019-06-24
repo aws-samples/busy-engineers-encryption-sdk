@@ -51,13 +51,5 @@ Cleaning up your development environment
         #. ``BusyEngineersSdkCloud9``
         #. ``BusyEngineersSdkBase``
 
-    .. group-tab:: Manual
-
-        Open `the EC2 console for us-east-2
-        <https://us-east-2.console.aws.amazon.com/ec2/v2/home?region=us-east-2#Instances:sort=instanceId>`_.
-
-        Terminate the instance you created earlier.
-
-        Go to `the IAM console's Roles section <https://console.aws.amazon.com/iam/home?region=us-east-2#/roles>`_.
-
-        Remove the ``busy-engineers-workshop-admin`` role.
+        If you also ran the workshop in your own account outside of an AWS Classroom, you will need to delete an additional
+        CloudFormation stack, the ``busy-engineers-ee-iam`` stack which contains extended IAM resources.

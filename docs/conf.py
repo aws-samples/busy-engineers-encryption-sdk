@@ -6,7 +6,7 @@ project = "A Busy Engineer's Guide to the AWS Encryption SDK"
 source_suffix = ".rst"  # The suffix of source filenames.
 master_doc = "index"  # The master toctree document.
 
-copyright = u"%s, Amazon" % datetime.now().year  # pylint: disable=redefined-builtin
+copyright = u"Copyright 2017-%s Amazon.com, Inc. or its affiliates." % datetime.now().year # pylint: disable=redefined-builtin
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
