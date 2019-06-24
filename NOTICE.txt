@@ -1,5 +1,5 @@
 busy-engineers-encryption-sdk
-Copyright 2017 Amazon.com, Inc. or its affiliates. All rights reserved.
+Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All rights reserved.
 
 **********************
 THIRD PARTY COMPONENTS
@@ -39,7 +39,7 @@ https://sizzlejs.com/
 Copyright JS Foundation and other contributors
 Released under the MIT license
 https://jquery.org/license
-Date: 2017-03-20T18:59Z
+Date: 2017--03-20T18:59Z
 
 https://jquery.org/license/
 
