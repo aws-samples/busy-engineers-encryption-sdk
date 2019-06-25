@@ -63,7 +63,7 @@ public class AssignGrantPlugin extends AbstractMojo {
             
             // Get the Lambda-associated role to be our grantee principal
             List<Role> allRoles = iamClient.listRoles().getRoles();
-            List<Role> filteredRoles = allRoles.stream().filter(r -> r.getRoleName().contains("busy-engineers-ee-iam-LambdaRole-")).collect(Collectors.toList());
+            List<Role> filteredRoles = allRoles.stream().filter(r -> r.getRoleName().contains("Lambda")).collect(Collectors.toList());
             if (filteredRoles.isEmpty()) {
                 throw new MojoFailureException("Unable to find Lambda role ARN to assign grant.");
             }
