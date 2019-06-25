@@ -147,13 +147,13 @@ all that's left is to configure the Encryption SDK to use them both.
         .. code-block:: python
            :lineno-start: 66
 
-             def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
-                         """Generate Multiple Master Key Provider."""
-                         kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
-                         kms_master_key_provider.add_master_key(key_id_west)
-                         kms_master_key_provider.add_master_key(key_id_east)
+            def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
+            """Generate Multiple Master Key Provider."""
+                kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
+                kms_master_key_provider.add_master_key(key_id_west)
+                kms_master_key_provider.add_master_key(key_id_east)
 
-                         return kms_master_key_provider
+            return kms_master_key_provider
 
 Now you have a Master Key Provider with multiple Master Keys configured. Using this MKP configures the Encryption SDK to
 use multiple CMKs for cryptographic operations.
@@ -212,7 +212,7 @@ You'll see more about each of these behaviors in a minute.
         .. code-block:: python
            :lineno-start: 31
 
-                self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id_east, key_id_west)
+            self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id_east, key_id_west)
 
 .. tabs::
 
