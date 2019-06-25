@@ -1,5 +1,5 @@
-reinvent-sid345-workshop-sample
-Copyright 2017 Amazon.com, Inc. or its affiliates. All rights reserved.
+busy-engineers-encryption-sdk
+Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All rights reserved.
 
 **********************
 THIRD PARTY COMPONENTS
