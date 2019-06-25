@@ -91,7 +91,6 @@ First, let's make sure the dependencies are setup correctly.
         Open ``setup.py`` and ensure this requirement is in ``install_requires``:
 
         .. code-block:: python
-
             install_requires=["aws_encryption_sdk>=1.3.8"]
 
 Now, let's add some imports:
@@ -103,8 +102,8 @@ Now, let's add some imports:
         .. code-block:: java
            :lineno-start: 30
 
-            import com.amazonaws.encryptionsdk.MasterKeyProvider;
-            import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
+           import com.amazonaws.encryptionsdk.MasterKeyProvider;
+           import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
 
     .. group-tab:: Python
 
@@ -126,9 +125,9 @@ all that's left is to configure the Encryption SDK to use them both.
         .. code-block:: java
            :lineno-start: 60
 
-            private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
+           private static MasterKeyProvider<?> getKeyProvider(KmsMasterKey masterKeyEast, KmsMasterKey masterKeyWest) {
                 return MultipleProviderFactory.buildMultiProvider(masterKeyWest, masterKeyEast);
-            }
+           }
 
 
 
@@ -140,13 +139,13 @@ all that's left is to configure the Encryption SDK to use them both.
         .. code-block:: python
            :lineno-start: 66
 
-            def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
-            """Generate Multiple Master Key Provider."""
-                kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
-                kms_master_key_provider.add_master_key(key_id_west)
-                kms_master_key_provider.add_master_key(key_id_east)
+           def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
+           """Generate Multiple Master Key Provider."""
+               kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
+               kms_master_key_provider.add_master_key(key_id_west)
+               kms_master_key_provider.add_master_key(key_id_east)
 
-            return kms_master_key_provider
+           return kms_master_key_provider
 
 Now you have a Master Key Provider with multiple Master Keys configured. Using this MKP configures the Encryption SDK to
 use multiple CMKs for cryptographic operations.
@@ -174,19 +173,19 @@ You'll see more about each of these behaviors in a minute.
         .. code-block:: java
            :lineno-start: 59
 
-            private final KmsMasterKey masterKeyEast;
-            private final KmsMasterKey masterKeyWest;
-            private final MasterKeyProvider<?> provider;
+           private final KmsMasterKey masterKeyEast;
+           private final KmsMasterKey masterKeyWest;
+           private final MasterKeyProvider<?> provider;
 
         In your constructor, you can create the Master Keys like so:
 
         .. code-block:: java
            :lineno-start: 73
 
-            kms = AWSKMSClient.builder().build();
-            this.masterKeyEast = new KmsMasterKeyProvider(keyIdEast)
+           kms = AWSKMSClient.builder().build();
+           this.masterKeyEast = new KmsMasterKeyProvider(keyIdEast)
                 .getMasterKey(keyIdEast);
-            this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest)
+           this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest)
                 .getMasterKey(keyIdWest);
 
         In your constructor, you can use the helper function to create the Master Key Provider using the Master Keys:
@@ -194,7 +193,7 @@ You'll see more about each of these behaviors in a minute.
         .. code-block:: java
            :lineno-start: 78
 
-            this.provider = getKeyProvider(masterKeyEast, masterKeyWest)
+           this.provider = getKeyProvider(masterKeyEast, masterKeyWest)
 
     .. group-tab:: Python
 
@@ -204,7 +203,7 @@ You'll see more about each of these behaviors in a minute.
         .. code-block:: python
            :lineno-start: 31
 
-            self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id_east, key_id_west)
+           self.master_key_provider = self.construct_multiregion_kms_master_key_provider(key_id_east, key_id_west)
 
 .. tabs::
 
@@ -215,7 +214,7 @@ You'll see more about each of these behaviors in a minute.
         .. code-block:: java
            :lineno-start: 81
 
-            public String encrypt(JsonNode data) throws IOException {
+           public String encrypt(JsonNode data) throws IOException {
                 FormData formValues = MAPPER.treeToValue(data, FormData.class);
 
                 // We can access specific form fields using values in the parsed FormData object.
@@ -229,7 +228,7 @@ You'll see more about each of these behaviors in a minute.
                 byte[] ciphertext = new AwsCrypto().encryptData(provider, plaintext, context).getResult();
 
                 return Base64.getEncoder().encodeToString(ciphertext);
-            }
+           }
 
     .. group-tab:: Python
 
@@ -256,7 +255,7 @@ or the us-east-2 key is sufficient to access the plaintext.
         .. code-block:: java
            :lineno-start: 100
 
-            public JsonNode decrypt(String ciphertext) throws IOException {
+           public JsonNode decrypt(String ciphertext) throws IOException {
                 byte[] ciphertextBytes = Base64.getDecoder().decode(ciphertext);
 
                 CryptoResult<byte[], ?> result = new AwsCrypto().decryptData(provider, ciphertextBytes);
@@ -267,7 +266,7 @@ or the us-east-2 key is sufficient to access the plaintext.
                 }
 
                 return MAPPER.readTree(result.getResult());
-            }
+           }
 
     .. group-tab:: Python
 
