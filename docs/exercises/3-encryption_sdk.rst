@@ -193,7 +193,7 @@ First, let's make sure the Encryption SDK is set up as a dependency correctly.
                 <dependency>
                     <groupId>com.amazonaws</groupId>
                     <artifactId>aws-encryption-sdk-java</artifactId>
-                    <version>1.3.5</version>
+                    <version>1.6.0</version>
                 </dependency>
 
     .. group-tab:: Python
