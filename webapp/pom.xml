@@ -33,19 +33,19 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-sqs</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
 
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-kms</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
 
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-logs</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
 
         <dependency>
