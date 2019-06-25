@@ -6,7 +6,7 @@ sends form data over Amazon SQS.
 First, you'll enable encryption by calling KMS directly, then, you'll change your code to use the
 Encryption SDK to call KMS for you. You will then explore the multi-CMK capability of the AWS 
 Encryption SDK by using Multiple Master Key Encryption. You will also add data key caching to reduce 
-calls to KMS call overhead and an encryption context. The encryption context is non-secret data that 
+calls to KMS. Finally, you will add and an encryption context. The encryption context is non-secret data that 
 you can use for tracking and auditing, verifying the identity of an encrypted message, and as a condition 
 for grants and policies. 
 
