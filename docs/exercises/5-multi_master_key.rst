@@ -188,14 +188,13 @@ You'll see more about each of these behaviors in a minute.
                 .getMasterKey(keyIdEast);
             this.masterKeyWest = new KmsMasterKeyProvider(keyIdWest)
                 .getMasterKey(keyIdWest);
-            this.provider = getKeyProvider(masterKeyEast, masterKeyWest);
 
         In your constructor, you can use the helper function to create the Master Key Provider using the Master Keys:
 
         .. code-block:: java
            :lineno-start: 78
 
-            this.masterKeyProvider = getMasterKeyProvider(masterKeyEast, masterKeyWest)
+            this.provider = getKeyProvider(masterKeyEast, masterKeyWest)
 
     .. group-tab:: Python
 
