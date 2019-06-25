@@ -72,25 +72,18 @@ Step by step
 
 First, let's make sure the dependencies are setup correctly.
 
-
 .. tabs::
 
     .. group-tab:: Java
 
-        Open up ``webapp/pom.xml`` and add this block in the ``<dependencies>`` section:
+        Open up ``webapp/pom.xml`` and ensure this block is in the ``<dependencies>`` section:
 
         .. code-block:: xml
 
                 <dependency>
                     <groupId>com.amazonaws</groupId>
-                    <artifactId>aws-java-sdk-core</artifactId>
-                    <version>1.11.213</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>com.amazonaws</groupId>
-                    <artifactId>aws-java-sdk-sts</artifactId>
-                    <version>1.11.213</version>
+                    <artifactId>aws-encryption-sdk-java</artifactId>
+                    <version>1.6.0</version>
                 </dependency>
 
     .. group-tab:: Python
