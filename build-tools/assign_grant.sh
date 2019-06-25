@@ -25,7 +25,7 @@ echo "* Assigning Grants *"
 echo "********************"
 
 account=$(aws sts get-caller-identity --query 'Account' --output text)
-account_arn=$(aws iam list-roles | grep "busy-engineers-ee-iam-LambdaRole-" | grep "arn" | awk '{print $2}' | tr -d \" | tr -d ",")
+account_arn=$(aws iam list-roles | grep "Lambda" | grep "arn" | awk '{print $2}' | tr -d \" | tr -d ",")
 alias="alias/busy-engineers-workshop-us-west-2-key"
 arn="arn:aws:kms:us-west-2:$account:$alias"
 key_id=$(aws kms describe-key --region "us-west-2" --key-id $arn --query 'KeyMetadata.KeyId' --output text)
