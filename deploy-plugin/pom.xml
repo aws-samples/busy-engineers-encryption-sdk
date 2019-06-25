@@ -39,25 +39,25 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-cloudformation</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
 
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
         
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-sts</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
         
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-iam</artifactId>
-            <version>1.11.213</version>
+            <version>1.11.579</version>
         </dependency>
 
     </dependencies>
