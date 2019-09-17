@@ -18,28 +18,10 @@ sudo yum install -y java-1.8.0-openjdk-devel git
 
 clear
 echo ""
-echo ""
-echo ""
-echo "**************************************************"
-echo "*                       JAVA                     *"
-echo "* Please select Java 8 from the below selections *"
-echo "**************************************************"
-echo ""
-echo ""
-echo ""
-sudo /usr/sbin/alternatives  --config java
+sudo /usr/sbin/alternatives  --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
 echo ""
-echo ""
-echo ""
-echo "**************************************************"
-echo "*                       JAVAC                    *"
-echo "* Please select Java 8 from the below selections *"
-echo "**************************************************"
-echo ""
-echo ""
-echo ""
-sudo /usr/sbin/alternatives  --config javac
+sudo /usr/sbin/alternatives  --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
 
 sudo wget http://busy-engineers-guide.reinvent-workshop.com/software/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
 sudo sed -i s/\$releasever/7/g /etc/yum.repos.d/epel-apache-maven.repo
