@@ -99,8 +99,6 @@ Prerequisites Installation
 
         After you're logged in to the Cloud9 IDE, use our utility script to prepare your language environment.
 
-        You will be prompted to choose the default version of Java during the install process. Choose Java 1.8.x.
-
         .. code-block:: bash
 
             cd busy-engineers-encryption-sdk
