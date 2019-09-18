@@ -91,7 +91,8 @@ First, let's make sure the dependencies are setup correctly.
         Open ``setup.py`` and ensure this requirement is in ``install_requires``:
 
         .. code-block:: python
-            install_requires=["aws_encryption_sdk>=1.3.8"]
+
+                install_requires=["aws_encryption_sdk>=1.3.8"]
 
 Now, let's add some imports:
 
@@ -140,12 +141,12 @@ all that's left is to configure the Encryption SDK to use them both.
            :lineno-start: 66
 
            def construct_multiregion_kms_master_key_provider(self, key_id_east, key_id_west):
-           """Generate Multiple Master Key Provider."""
+               """Generate Multiple Master Key Provider."""
                kms_master_key_provider = aws_encryption_sdk.KMSMasterKeyProvider()
                kms_master_key_provider.add_master_key(key_id_west)
                kms_master_key_provider.add_master_key(key_id_east)
 
-           return kms_master_key_provider
+               return kms_master_key_provider
 
 Now you have a Master Key Provider with multiple Master Keys configured. Using this MKP configures the Encryption SDK to
 use multiple CMKs for cryptographic operations.
