@@ -12,7 +12,7 @@ copyright = u"Copyright 2017-%s Amazon.com, Inc. or its affiliates." % datetime.
 # for source files.
 exclude_trees = ["_build"]
 
-extensions = ['sphinx_tabs.tabs']
+extensions = ["sphinx_tabs.tabs", "sphinx_copybutton"]
 
 pygments_style = "sphinx"
 

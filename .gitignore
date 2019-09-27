@@ -3,12 +3,18 @@ target
 *.iml
 .DS_Store
 .idea
+
+# build metadata files
 *.pyc
 *.pyo
 *.egg-info
 build/
 */dist/
+
+# tooling metadata files
 .tox/
-reinvent_sid345_artifacts/
+busy_engineers_workshop_artifacts/
 dist/
 .python-version
+venv/
+doc
