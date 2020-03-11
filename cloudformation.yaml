@@ -152,7 +152,7 @@ Resources:
       Handler: index.redirect
       MemorySize: 128
       Role: !ImportValue "busy-engineers-workshop-LambdaRole"
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Timeout: 5
   RedirectPermissions:
     Type: 'AWS::Lambda::Permission'
