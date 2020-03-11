@@ -1,4 +1,4 @@
-A Busy Engineer's Guide to the AWS Encryption SDK is no longer supported. Check out our new workshop, the Busy Engineer’s Document Bucket, which includes support for more languages and can be [found here](https://github.com/aws-samples/busy-engineers-document-bucket).
+Check out our new workshop, the Busy Engineer’s Document Bucket, which includes support for more languages and can be [found here](https://github.com/aws-samples/busy-engineers-document-bucket).
 
 # A Busy Engineer's Guide to the AWS Encryption SDK
 
