@@ -2,6 +2,8 @@
 
 Check out our new workshop, the Busy Engineer’s Document Bucket, which includes support for more languages and can be [found here](https://github.com/aws-samples/busy-engineers-document-bucket).
 
+[Security issue notifications](./CONTRIBUTING.md#security-issue-notifications)
+
 # A Busy Engineer's Guide to the AWS Encryption SDK
 
 In this workshop, you will add encryption and decryption features to a simple web application that
